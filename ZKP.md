@@ -120,19 +120,90 @@ The indistinguishability can be:
 
 ## Key Techniques
 
-- **Polynomial Commitments**: KZG (pairing-based), FRI (STARKs)
-- **Arithmetization**: Convert computation to polynomial equations
-  * R1CS (Rank-1 Constraint Systems) → QAP (Quadratic Arithmetic Program)
-  * AIR (Algebraic Intermediate Representation) for STARKs
-- **Cryptographic Primitives**:
-  * Elliptic curve pairings (BLS12-381, BN254)
-  * Fast Fourier Transforms (FFT) over finite fields
-  * Merkle trees + Hash functions (Poseidon, Rescue)
-- **Proof Composition**: 
-  * Darlin (using Halo2 recursion)
-  * Nova (folding schemes)
+### Polynomial Commitments
+Core primitive allowing a prover to commit to a polynomial and later prove evaluations of it. Several schemes exist:
+- **KZG** (Kate-Zaverucha-Goldberg): Pairing-based with constant-sized proofs but requires trusted setup
+- **FRI** (Fast Reed-Solomon IOPP): Used in STARKs, hash-based with transparent setup but larger proofs
+- **IPA** (Inner Product Arguments): Used in Bulletproofs, based on discrete logarithm
+- **DARK** (Diophantine Arguments of Knowledge): Uses groups of unknown order for post-quantum security
+- **Hyrax**: Uses multilinear polynomials for commitments with logarithmic verifier time
 
-The mathematical foundations rely heavily on:
-- **Hardness assumptions:** Discrete Log, Learning With Errors (LWE), Knowledge-of-Exponent
-- **Algebraic techniques:** Multilinear polynomials, Reed-Solomon codes
-- **Cryptographic accumulators:** Vector commitments, membership proofs
+### Arithmetization
+Process of converting computational statements into systems of polynomial equations:
+- **R1CS → QAP** (SNARK approach):
+  * **R1CS**: Compile computation into linear algebra system: $A·z \circ B·z = C·z$
+  * **QAP**: Encode constraints as quotient space membership using Lagrange interpolation
+  * **Low-Degree Check**: Ensure compatibility between polynomials
+- **AIR** (Algebraic Intermediate Representation - STARK approach):
+  * Define execution trace as 2D table of register states
+  * Express constraints as transition functions between rows: $\forall i,\ F(\text{trace}[i], \text{trace}[i+1]) = 0$
+  * Apply boundary constraints on initial/final states
+- **Plonkish Arithmetization**:
+  * General-purpose constraints ($q_L·a + q_R·b + q_O·c + q_M·a·b + q_C = 0$)
+  * Custom gates for optimized circuit implementations
+
+### Cryptographic Primitives
+Critical building blocks used across protocols:
+- **Elliptic Curves**:
+  * Pairing-friendly curves (BLS12-381, BN254) for efficient pairings in SNARKs
+  * Curve25519/Ed25519 for faster operations in transparent schemes
+- **Polynomial Transforms**:
+  * FFT over finite fields for efficient polynomial multiplication/interpolation
+  * Multiexponentiations (Pippenger) for fast MSM computations
+- **Hash Functions**:
+  * ZK-friendly designs (Poseidon, Rescue, Pedersen) minimize circuit complexity
+  * Merkle trees (binary/poseidon) for commitment to large data structures
+- **Zero-Knowledge Oracles**:
+  * Random linear combination checks (PLONK)
+  * Lookup arguments (Plookup, Halo2) for efficient table operations
+
+### Proof Composition
+Techniques to combine proofs for scalability and flexibility:
+- **Recursion**:
+  * Verify proofs inside bigger proofs (e.g., Halo2 recursion)
+  * Requires special cycles of elliptic curves (for pairing-friendly curves)
+- **Folding Schemes** (Nova):
+  * Accumulate multiple instances into one
+  * IVC (Incrementally Verifiable Computation) for long-running processes
+- **Aggregation**:
+  * Combine multiple proofs into single proof (SnarkPack, Bulletproofs)
+  * Requires different techniques for different proof systems
+- **Proof Carrying Data**:
+  * Maintain integrity chain through distributed computations
+  * Basis for zkBridge designs
+
+## Mathematical Foundations
+
+Zero-Knowledge Proof systems build upon several core mathematical concepts:
+
+### Hardness Assumptions
+Cryptographic security relies on computational problems believed to be hard:
+- **Discrete Logarithm (DL)**: Given $g$ and $g^a$ in cyclic group $G$, find $a$
+  * Basis for: Schnorr protocol, Bulletproofs
+- **Learning With Errors (LWE)**: Solve noisy linear equations; basis for post-quantum schemes
+  * Used in: lattice-based ZKPs
+- **Knowledge-of-Exponent (KEA)**: If adversary computes $g^a$, they know $a$
+  * Critical for: extractability in SNARKs
+- **Elliptic Curve Pairings**: Bilinear maps $e: G_1 × G_2 → G_T$ enabling compact proofs
+- **RSA Assumption**: Hardness of factoring large composites
+
+### Algebraic Techniques
+Efficient polynomial manipulation for arithmetization:
+- **Multilinear Polynomials**: $p(x_1,...,x_k)$ linear in each variable
+  * Enable: sum-check protocol, fast interactive proofs
+- **Reed-Solomon Codes**: Error-correcting codes with polynomial evaluations
+  * Core of: FRI protocol (STARKs), low-degree testing
+- **Fast Fourier Transform (FFT)** for $\mathcal{O}(n \log n)$ polynomial multiplication
+  * Optimizes: polynomial commitments, constraint systems
+- **Elliptic Curve Cryptography**: 
+  * Groups with efficient arithmetic & pairings (BLS12-381, BN254)
+
+### Cryptographic Accumulators
+Compact representations of sets with membership proofs:
+- **Vector Commitments**: Binding to a vector $v_1,...,v_n$ with $\mathcal{O}(1)$ proofs
+  * Example: polynomial commitments (KZG)
+- **Membership Proofs**: 
+  - **Merkle Trees**: Binary trees with hash nodes (logarithmic proof size)
+  - **RSA Accumulators**: $acc = g^{\prod (e_i)} \mod N$ for set $\{e_i\}$
+- **Universal Accumulators**: Support non-membership proofs
+- **Zero-Knowledge Accumulators**: Hide set elements (e.g., using Pedersen commitments)
