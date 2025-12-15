@@ -4,14 +4,29 @@ Here is a concise but technical summary of Zero-Knowledge Proofs (ZKP):
 
 ## Zero-Knowledge Proofs (ZKP)
 
-In this note, unless stated otherwise, 
+### Notations
 
-* $P$ denotes a prover
-* $V$ denotes a verifier
-* $\lambda$ is a ‘small’ parameters
-* $x$ is a statement
-* $L$ is a set of ‘correct’ statements
-* If $x \in L$, $w$ denotes a witness for $x$
+In this note, unless stated otherwise we use the following notations:
+
+* $P$: Prover
+* $V$: Verifier
+* $\lambda$: Security parameter (a 'small' value, typically 128-256 bits)
+* $x$: Statement to be proven (public input)
+* $L$: Language of valid statements
+* $w$: Witness (private input) satisfying $R(x,w) = 1$ when $x \in L$
+* $R$: Relation between statements and witnesses ($R(x,w)=1$ iff $w$ valid for $x$)
+* $S$: Simulator (constructs fake proofs indistinguishable from real ones)
+* $\mathit{negl}(\lambda)$: Negligible function (faster than inverse polynomial)
+* $\epsilon$: Soundness error probability
+* $\mathcal{E}$: Knowledge extractor algorithm
+* $G, G_1, G_2, G_T$: Elliptic curve groups (with pairing $e: G_1 × G_2 → G_T$)
+* $\mathbb{F}_p$: Finite field of prime order $p$
+* $R$: Montgomery radix (typically $2^{64}$)
+* $N$: RSA modulus
+* $g$: Generator of cyclic group
+* $acc$: Cryptographic accumulator
+* $\circ$: Hadamard (element-wise) product
+* $zk$: Zero-knowledge modifier (e.g., zk-SNARK)
 
 ### What is a ZKP?
 
@@ -262,3 +277,31 @@ Compact representations of sets with membership proofs:
   - **RSA Accumulators**: $acc = g^{\prod (e_i)} \mod N$ for set $\{e_i\}$
 - **Universal Accumulators**: Support non-membership proofs
 - **Zero-Knowledge Accumulators**: Hide set elements (e.g., using Pedersen commitments)
+
+
+## List of Abbreviations
+
+| Abbreviation | Full Form | Description |
+|--------------|-----------|-------------|
+| **ZKP** | Zero-Knowledge Proof | Cryptographic method proving knowledge without revealing the secret |
+| **NIZK** | Non-Interactive Zero-Knowledge | ZK proof requiring only a single message from prover to verifier |
+| **SNARK** | Succinct Non-interactive Argument of Knowledge | Compact proof system requiring trusted setup |
+| **STARK** | Scalable Transparent Argument of Knowledge | Transparent (no trusted setup), quantum-resistant proof |
+| **SNARG** | Succinct Non-interactive Argument | Similar to SNARK but without knowledge soundness |
+| **R1CS** | Rank-1 Constraint System | Common arithmetization for circuits in SNARKs |
+| **QAP** | Quadratic Arithmetic Program | Polynomial equation form used in SNARK constructions |
+| **AIR** | Algebraic Intermediate Representation | Arithmetization method for STARKs |
+| **IOP** | Interactive Oracle Proof | Framework combining interactive proofs with polynomial oracles |
+| **FRI** | Fast Reed-Solomon Interactive Oracle Proof of Proximity | Low-degree testing protocol used in STARKs |
+| **IPA** | Inner Product Argument | Compact proof for inner products used in Bulletproofs |
+| **DARK** | Diophantine Arguments of Knowledge | Arguments using groups of unknown order |
+| **CRS** | Common Reference String | Public parameters from a trusted setup |
+| **KZG** | Kate-Zaverucha-Goldberg | Polynomial commitment scheme based on pairings |
+| **MSM** | Multi-Scalar Multiplication | Cryptographic primitive for fast polynomial evaluations |
+| **IVC** | Incrementally Verifiable Computation | Chain of computations where each step is verified |
+| **LWE** | Learning With Errors | Post-quantum lattice-based cryptographic assumption |
+| **DL** | Discrete Logarithm | Foundational cryptographic hardness assumption |
+| **KEA** | Knowledge-of-Exponent Assumption | Requirement for extractability in SNARKs |
+| **FFT** | Fast Fourier Transform | Algorithm for efficient polynomial operations |
+| **RSA** | Rivest-Shamir-Adleman | Public-key cryptosystem based on factoring |
+| **acc** | Accumulator | Compact data structure for set membership proofs |
