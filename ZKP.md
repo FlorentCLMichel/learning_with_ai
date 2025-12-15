@@ -4,6 +4,15 @@ Here is a concise but technical summary of Zero-Knowledge Proofs (ZKP):
 
 ## Zero-Knowledge Proofs (ZKP)
 
+In this note, unless stated otherwise, 
+
+* $P$ denotes a prover
+* $V$ denotes a verifier
+* $\lambda$ is a ‘small’ parameters
+* $x$ is a statement
+* $L$ is a set of ‘correct’ statements
+* If $x \in L$, $w$ denotes a witness for $x$
+
 ### What is a ZKP?
 
 - Method where a *prover* convinces a *verifier* they know a secret $w$ (witness) for some statement $x$ without revealing $w$
@@ -40,6 +49,10 @@ Two main variants exist:
 - **Statistical soundness**: Security holds against unbounded adversaries
 - **Computational soundness**: Security relies on computational hardness assumptions (e.g., discrete logarithm, factoring)
 
+**Verification Modes**:
+- **Honest-Verifier ZK (HVZK)** - Only secure against verifiers following protocol
+- **Malicious-Verifier ZK** - Security against arbitrary verification strategies
+
 ### Knowledge-Soundness
 
 Knowledge soundness (also called "proof of knowledge") in Zero-Knowledge Proofs refers to the property that if a prover can convince the
@@ -50,12 +63,15 @@ Regular soundness only ensures: "No convincing proof exists for false statements
 
 Knowledge soundness additionally ensures: "A convincing proof implies the prover knows a witness/w secret"
 
-This is formalized using an extractor—if the prover succeeds, there must exist an efficient algorithm (the knowledge extractor) that
-can extract the witness from the prover.
+This is formalized using an extractor: For any prover $P^*$ that convinces $V$ with probability $\epsilon$, there exists an extractor $\mathcal{E}$ that runs in time $\mathit{poly}(1/\epsilon)$ and outputs $w$ such that $R(x,w) = 1$ with probability approaching 1.
+
+We write this as:
+$$ \forall P^* \exists \mathcal{E} : (w \leftarrow \mathcal{E}^{P^*}(x)) \land (R(x,w)=1) $$
+with probability $1 - \mathit{negl}(\lambda)$
 
 ### Zero-Knowledge
 
-The Verifier learns nothing beyond the truth of the statement. Formally, there exists a Simulator $S$ that can produce transcripts indistinguishable from real interactions with any malicious Verifier ($V^*$):
+The Verifier learns nothing beyond the truth of the statement. Formally, there exists a Simulator $S$ (that does not know $w$) that can produce transcripts indistinguishable from real interactions with any malicious Verifier ($V^*$):
 $$ \forall V^* \exists S : \mathsf{View}_{V^*}(\langle P, V^* \rangle(x, w)) \approx S(x) $$
 The indistinguishability can be:
 - **Perfect**: Identical distributions
@@ -64,21 +80,44 @@ The indistinguishability can be:
 
 ## Types of Proof Systems
 
+### Interactive vs Non-Interactive
+A key distinction in proof systems:
+
+- **Interactive**: Multiple rounds of communication between $P$ and $V$ (e.g., classical ZK protocols like Schnorr's protocol)
+- **Non-Interactive (NIZK)**: Single message proof (e.g., SNARKs/STARKs) enabled by:
+  * Random oracle model (Fiat-Shamir heuristic)
+  * Trusted setup parameters
+
 ### 1. SNARK (Succinct Non-interactive Argument of Knowledge)
 - **Proof Size**: ~288 bytes (very small)
 - **Verification Speed**: Milliseconds (fastest)
-- **Setup**: Requires trusted setup ceremony
-- **Security Assumptions**: Elliptic curves + pairings
+- **Proving Speed**: Moderate (depends on circuit size)
+- **Setup**: Required
+  * *CRS (Common Reference String)*: Public parameters generated in a setup phase that both prover/verifier use
+  * *Groth16:* Per-circuit trusted setup
+  * *PLONK:* Universal trusted setup (reusable)
+  * *Trusted setup risks*: Requires secure parameter generation ceremony ("toxic waste" disposal)
+- **Security Assumptions**: 
+  * Elliptic curve pairings (bilinear groups)
+  * Knowledge-of-Exponent Assumption (KEA)
+  * Some variants require q-PKE or q-PDH
 - **Quantum Resistance**: No
-- **Use Cases**: Blockchain rollups needing tiny proofs (e.g., Zcash)
-- **Examples**: Groth16, PLONK
+- **Use Cases**: Blockchain rollups needing tiny proofs (e.g., Zcash, Filecoin)
+- **Examples**: 
+  * Groth16: Most efficient proofs
+  * PLONK: Flexible circuits with universal setup
+  * Halo2: Recursive proofs without trusted setup
 
 ### 2. STARK (Scalable Transparent Argument of Knowledge)
 - **Proof Size**: ~100KB (largest)
-- **Verification Speed**: Slower than SNARKs but faster proving
+- **Verification Speed**: Slower than SNARKs
+- **Proving Speed**: Faster than SNARKs for large computations due to parallelization
 - **Setup**: No trusted setup (transparent)
 - **Security Assumptions**: Hash functions (post-quantum)
-- **Quantum Resistance**: Yes
+- **Quantum Resistance**: 
+  * Based on hash functions (e.g., SHA-3, Rescue)
+  * Security reduces to finding collisions/preimages → quantum security requires 256+ bit security level
+  * Grover's quantum algorithm provides square-root speedup → need larger security parameters
 - **Use Cases**: High-throughput systems requiring quantum safety (e.g., StarkNet)
 - **Examples**: StarkEx, StarkNet
 
@@ -87,7 +126,10 @@ The indistinguishability can be:
 - **Verification Speed**: Fast
 - **Setup**: May or may not need trusted setup
 - **Security Assumptions**: Varies
-- **Key Difference**: Weaker security than SNARKs (proof without knowledge)
+- **Key Difference**: Weaker security guarantee than SNARKs since they only prove statement validity (not knowledge possession)
+- **Security Implications**: 
+  * Vulnerable to "proof of pre-processing" attacks (prover computes proof from leaked witness material) 
+  * **SNARK** = **SNARG** + Knowledge soundness (proves actual witness possession)
 - **Example Variants**: SNARK = SNARG + Knowledge soundness
 
 ### 4. Bulletproofs
@@ -106,7 +148,7 @@ The indistinguishability can be:
 | Proof Size        | ~288B        | ~100KB      | ~288B        | Logarithmic  |
 | Verification Time | Fastest      | Medium      | Fast         | Slowest      |
 | Trusted Setup     | Required     | No          | Possibly     | No           |
-| Assumptions       | EC Pairings  | Hashes      | Varies       | Discrete Log |
+| Assumptions       | EC Pairings + KEA | Hashes      | Varies       | Discrete Log |
 | Quantum Safe      | No           | Yes         | No           | No           |
 | Scalability       | Medium       | High        | Medium       | Medium       |
 | Best For          | Small proofs | High volume | Light proofs | Range proofs |
@@ -119,6 +161,18 @@ The indistinguishability can be:
 4. **Specialization**: Bulletproofs excel at compact range proofs
 
 ## Key Techniques
+
+### Polynomial IOPs (Interactive Oracle Proofs)
+
+Framework that separates proof construction into:
+- **Oracles**: Prover provides oracle access to polynomials
+- **Queries**: Verifier makes oracle queries during interaction
+- **Consistency Checks**: Constraints between polynomials
+
+Key advantages:
+- Modularizes proof components
+- Enables efficient composition via recursive usage
+- Examples: Plonk, STARK, Sonic employ this framework
 
 ### Polynomial Commitments
 Core primitive allowing a prover to commit to a polynomial and later prove evaluations of it. Several schemes exist:
@@ -186,6 +240,7 @@ Cryptographic security relies on computational problems believed to be hard:
   * Critical for: extractability in SNARKs
 - **Elliptic Curve Pairings**: Bilinear maps $e: G_1 × G_2 → G_T$ enabling compact proofs
 - **RSA Assumption**: Hardness of factoring large composites
+- **Strong RSA Assumption**: Given $N$ and $y$, hard to find $x$ and $e>1$ s.t. $x^e ≡ y \mod N$ - used in accumulator constructions
 
 ### Algebraic Techniques
 Efficient polynomial manipulation for arithmetization:
@@ -193,7 +248,7 @@ Efficient polynomial manipulation for arithmetization:
   * Enable: sum-check protocol, fast interactive proofs
 - **Reed-Solomon Codes**: Error-correcting codes with polynomial evaluations
   * Core of: FRI protocol (STARKs), low-degree testing
-- **Fast Fourier Transform (FFT)** for $\mathcal{O}(n \log n)$ polynomial multiplication
+- **Fast Fourier Transform (FFT)**: used for $\mathcal{O}(n \log n)$ polynomial multiplication
   * Optimizes: polynomial commitments, constraint systems
 - **Elliptic Curve Cryptography**: 
   * Groups with efficient arithmetic & pairings (BLS12-381, BN254)
