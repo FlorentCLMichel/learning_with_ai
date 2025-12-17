@@ -46,24 +46,86 @@ A Zero-Knowledge Proof (ZKP) is a cryptographic method where a **Prover** convin
         |                                 |                                 | Result (Accept/Reject)
         |<------------------------------------------------------------------|
 ```
-
----
-
-## Core Properties
+### Core Properties
 For a ZKP system to be valid, it must satisfy three properties:
 
-### 1. Completeness
+#### 1. Completeness
 If the statement is true and the Prover is honest, the Verifier will be convinced with overwhelming probability.
 $$\Pr[\langle P, V \rangle(x, w) = 1] = 1 - \mathit{negl}(\lambda)$$
 
-### 2. Soundness (and Knowledge Soundness)
+#### 2. Soundness (and Knowledge Soundness)
 * **Soundness:** A malicious Prover cannot convince a Verifier of a false statement.
 * **Knowledge Soundness:** A stronger property. If a Prover convinces the Verifier, they must *know* the witness, not just that a witness exists. This is defined by the existence of an **Extractor ($\mathcal{E}$)** that can recover $w$ from a successful adversary.
     $$\forall P^* \exists \mathcal{E} : (w \leftarrow \mathcal{E}^{P^*}(x)) \land (R(x,w)=1)$$
 
-### 3. Zero-Knowledge
+#### 3. Zero-Knowledge
 The interaction reveals nothing but the validity of the statement. The verifier's view of the interaction can be simulated by a Simulator $S$ that does not know $w$.
 $$\mathsf{View}_{V^*}(\langle P, V^* \rangle(x, w)) \approx S(x)$$
+
+### Simple examples
+
+#### Proving the color of the card drawn from a standard deck of cards
+
+**Protocol Decription:**
+
+1. **Setup:** You have a standard deck of 52 cards (26 red, 26 black).
+2. **The Claim:** The Prover ($P$) draws one card at random, looks at it, and places it face-down on the table. $P$ claims: "The card I have drawn is red."
+3. **The Proof:** To prove the card is red without revealing its suit (Hearts/Diamonds) or its value (Ace, King, etc.), the Prover takes the remaining 51 cards in the deck.
+4. **Verification:** The Prover systematically flips over and shows the Verifier ($V$) every single black card (all 26 of them: 13 Spades and 13 Clubs) from the remaining pile.
+
+**Analyzing the properties:**
+
+1. **Completeness:**
+    * **Definition:** If the statement is true and both parties follow the rules, the Verifier will be convinced.
+    * **In this example:** If the Prover actually drew a red card, then all 26 black cards must still be in the remaining pile of 51. By showing all 26 black cards to the Verifier, the Prover successfully completes the protocol, and the Verifier is logically forced to accept that the hidden card is red.
+
+2. **Soundness:**
+    * **Definition:** If the statement is false, a cheating Prover cannot convince the Verifier.
+    * **In this example:** Suppose the Prover lied and actually drew a black card (e.g., the Ace of Spades). In this case, there are only 25 black cards left in the remaining pile. No matter what the Prover does, she cannot produce 26 distinct black cards to show the Verifier. Since she cannot satisfy the requirement of the proof, the Verifier will not be convinced. This protects the Verifier from being "tricked" by a false claim.
+
+3. **Zero-knowledge**
+    * **Definition:** The Verifier learns nothing other than the fact that the statement is true.
+    * **In this example:** After the proof, the Verifier knows with 100% certainty that the hidden card is red. However, the Verifier has no idea:
+        * If it is a Heart or a Diamond.
+        * What the Rank of the card is (e.g., is it a 5 or a Queen?).
+        * The Verifier's "view" consists only of seeing the 26 black cards he already knew existed in a standard deck. He gained no "knowledge" about the secret witness ($w$, the specific card) itself.
+
+
+**Comparison to Digital ZKPs:**
+
+While this physical example uses a "process of elimination," digital ZKPs like SNARKs use *Polynomial Commitments* to achieve the same effect.
+
+* In the card game, "revealing the black cards" is like the *Proof* ($\pi$).
+* The "hidden red card" is the *Witness* ($w$).
+* The "standard 52-card deck" rules act as the *Relation* ($R$).
+
+
+#### Sudoku board
+
+Imagine you (the Prover) claim to have solved a difficult Sudoku, and your friend (the Verifier) wants to be sure you aren't lying but doesn't want to see the solution yet. We shall use a physical card protocol.
+
+1. **Setup (The Commitment):**
+    * You take three identical decks of cards.
+    * For every cell on the Sudoku board, you place three cards face-down. These cards represent the number in your solution (e.g., if a cell is a "5", you place three 5s there).
+    * For the pre-filled "hint" numbers already on the board, you place those three cards face-up so the Verifier can see they match the puzzle. Once they are satisfied, you flip them face-down. 
+
+2. **The Challenge:** The Verifier now chooses one of three "challenges" at random:
+    1. **Rows:** Check if every row contains 1–9.
+    2. **Columns:** Check if every column contains 1–9.
+    3. **Subgrids:** Check if every 3x3 box contains 1–9.
+
+3. **The Proof (The Shuffle):** If the Verifier chooses Rows (respectively Columns or Subgrids):
+    * You take one of the three cards from every cell in the first row (resp. column or subgrid) and put them into a packet. You do this for all 9 rows (resp. columns or subgrids).
+    * Crucially, you shuffle each packet thoroughly before handing it to the Verifier.
+    * The Verifier opens the packets. They see nine cards numbered 1 through 9 in each packet
+
+**Why this works:**
+
+* **Completeness:** If you actually have the correct solution, you will always be able to produce packets containing 1–9.
+
+* **Zero-Knowledge:** Because the packets were shuffled, the Verifier sees that the numbers 1–9 are present, but they have no idea which number came from which cell. The "where" information is destroyed by the shuffle.
+
+* **Soundness:** If you cheated and have two "5s" in a row, one of your packets will eventually be missing a number. Since the Verifier can pick rows, columns, or subgrids, a cheater has a high chance of being caught. To make the proof "mathematically certain," you simply repeat this process multiple times with fresh cards.
 
 ---
 
