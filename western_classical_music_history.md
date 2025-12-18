@@ -49,11 +49,9 @@
 
 * **Dates:** c. 1900 – 2000
 * **Main Features:** A fracturing of styles. Composers broke all the rules.
-* *Impressionism:* Focus on atmosphere and color (Debussy).
-* *Atonality:* Music with no key center (Schoenberg).
-* *Minimalism:* Repetitive patterns and gradual change (Glass).
-
-
+    * *Impressionism:* Focus on atmosphere and color (Debussy).
+    * *Atonality:* Music with no key center (Schoenberg).
+    * *Minimalism:* Repetitive patterns and gradual change (Glass).
 * **Instruments:** Introduction of electronic instruments (theremin, synthesizers, tape loops) alongside traditional instruments pushed to their physical limits.
 * **Role of Music:** To challenge, shock, or experiment. The gap between "art music" and "popular music" widened significantly.
 * **Context:** Two World Wars and the atomic age shattered the Romantic ideal of inevitable progress. Recording technology changed how music was consumed forever.
