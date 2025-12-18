@@ -1,25 +1,27 @@
 # Zero-Knowledge Proofs: A Technical Primer
 
-## Introduction to Zero-Knowledge
+## Introduction
 
 ### What is a ZKP?
-A Zero-Knowledge Proof (ZKP) is a cryptographic method where a **Prover** convinces a **Verifier** that a statement is true without revealing the underlying secret information (the witness). It involves: 
+A **Zero-Knowledge Proof (ZKP)** is a cryptographic method where a **Prover** convinces a **Verifier** that a statement is true without revealing the underlying secret information (the **witness**). It involves: 
 
 * **Key elements:**
-    * A public *statement* $x$, the claimed being proved (*e.g.*, "I know a preimage of this hash value").
-    * A private *witness* $w$ known to teh prover (*e.g.* the preimage itself).
+    * A public *statement* $x$, the claimed being proved (*e.g.*, “I know a preimage of this hash value”).
+    * A private *witness* $w$ known to the prover (*e.g.* the preimage itself).
     * A relation $R$ that takes the public statement $x$ and the private witness $w$ as inputs, and outputs a binary result (1 or 0) such that $R(x,w) = 1$ if and only if $w$ is a valid witness for $x$.
     * The *language* $L$ for the relation $R$ is the set of of all statements for which a valid witness exists.
-* **Core Promise:** The verifier learns only that $\exists w$ such that $R(x,w) = 1$, and nothing else.
+* **Core Promise:** The verifier learns only that there exists a witness $w$ such that $R(x,w) = 1$, and nothing else.
 * **Key Use Cases:**
     * **Privacy:** Authenticating without revealing passwords, or private transactions (*e.g.*, Zcash, Tornado Cash).
-    * **Scalability:** Verifying complex computations off-chain to save on-chain gas (*e.g.*, zk-Rollups).
+    * **Scalability:** In a blockchain context, verifying complex computations off-chain to save on-chain gas (*e.g.*, zk-Rollups).
 
 ### Fundamental Actors
 
 * **Prover ($P$):** The party holding the secret witness $w$. They generate the proof.
 * **Verifier ($V$):** The party checking the proof validity without access to $w$.
-* **Simulator ($S$):** A theoretical construct used to prove the "Zero-Knowledge" property; if a simulator can generate a transcript indistinguishable from a real execution without knowing $w$, the protocol leaks no knowledge.
+* **Simulator ($S$):** A theoretical construct used to prove the “Zero-Knowledge” property; if a simulator can generate a transcript indistinguishable from a real execution without knowing $w$, the protocol leaks no knowledge.
+
+The ASCII diagram below shows, schematically and in a simplified way, a protocol for a Non-Interactive Zero-Knowledge (NIZK) proof system, more specifically a SNARK (see below). A ZK proof is said *Non-Interactive* if it requires only a single message from the prover to the verifier, rather than multiple rounds of back-and-forth communication. These systems are typically enabled by either a "Trusted Setup" or the "Fiat-Shamir heuristic" (which turns an interactive protocol into a non-interactive one). 
 
 ```
                                 +-------------------+
@@ -31,20 +33,22 @@ A Zero-Knowledge Proof (ZKP) is a cryptographic method where a **Prover** convin
         |                                 |                                 |
         v                                 v                                 v
    +----------+                  +-----------------+                  +----------+
-   |   Prover |                  | Trusted Setup   |                  | Verifier |
-   |    (P)   |                  |     (SNARK)     |                  |    (V)   |
+   |  Prover  |                  |  Trusted Setup  |                  | Verifier |
+   |   (P)    |                  |     (SNARK)     |                  |   (V)    |
    +----------+                  +-----------------+                  +----------+
         |                                 |                                 |
-        | Witness (w) [Secret]            | Common Reference String (CRS)   |
-        | Statement (x) [Public] <------------------------------------------|
+        | Witness (w) [Secret]            |                                 |
+        | Statement (x) [Public]          |   Common Reference String (CRS) |
+        | <-----------------------------------------------------------------|
         |                                 |                                 |
-        | [Computes Proof]                | [Verifies Proof]                |
+        | [Computes Proof]                |                                 |
         |                                 |                                 |
-        | Proof ($\pi$)                   |                                 |
-        |--------------------------------->                                 |
+        | Proof (π)                       |                                 |
+        |-----------------------------------------------------------------> |
+        |                                 |                [Verifies Proof] |
         |                                 |                                 |
-        |                                 |                                 | Result (Accept/Reject)
-        |<------------------------------------------------------------------|
+        |                                 |          Result (Accept/Reject) |
+        |<------------------------------------------------------------------| 
 ```
 ### Core Properties
 For a ZKP system to be valid, it must satisfy three properties:
