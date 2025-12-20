@@ -51,30 +51,24 @@ The ASCII diagram below shows, schematically and in a simplified way, a protocol
         |<------------------------------------------------------------------| 
 ```
 ### Core Properties
+In the following, we will informally denote by $\langle P, V \rangle$ the interaction between the prover and verifier.
+
 For a ZKP system to be valid, it must satisfy three properties:
 
 #### 1. Completeness
-If the statement is true and the Prover is honest, the Verifier will be convinced with overwhelming probability
-$$
-R(x, w) = 1 \Rightarrow \Pr[\langle P, V \rangle(x, w) = 1] = 1 - \mathit{negl}(\lambda),
-$$
-where $\langle P, V \rangle$ denotes the interaction between the prover and verifier.
+If the statement is true and the Prover is honest, the Verifier will be convinced with overwhelming probability (*statistical completeness*) or with certainty (*perpecf completeness*). Completeness can be formalised as follows:
+
+* **Statistical Completeness:** $R(x, w) = 1 \Rightarrow \Pr[\langle P, V \rangle(x, w) = 1] = 1 - \mathit{negl}(\lambda)$.
+* **Perfect Completeness:** $R(x, w) = 1 \Rightarrow \Pr[\langle P, V \rangle(x, w) = 1] = 1$.
 
 #### 2. Soundness (and Knowledge Soundness)
 
-* **Soundness:** A malicious Prover cannot convince a Verifier of a false statement:
-    $$
-    \not\exists w' R(x, w') = 1 \Rightarrow \Pr[\langle P, V \rangle(x, w) = 1] = \mathit{negl}(\lambda)
-    $$
-
-* **Knowledge Soundness:** A stronger property. If a Prover convinces the Verifier, they must *know* the witness, not just that a witness exists. This is defined by the existence of an **Extractor ($\mathcal{E}$)** that can recover $w$ from a successful adversary: $\neg (\Pr[\langle P, V \rangle(x, w) = 1] = \mathit{negl}(\lambda)) \Rightarrow \exists \mathcal{E} : (w \leftarrow \mathcal{E}^P(x)) \land (R(x,w)=1)$.
+* **Soundness:** A malicious Prover cannot convince a Verifier of a false statement: $\forall P^*, x \notin L \Rightarrow \Pr[\langle P^*, V \rangle(x) = 1] \leq \mathit{negl}(\lambda)$.
+    
+* **Knowledge Soundness:** A stronger property. If a Prover convinces the Verifier, they must *know* the witness, not just that a witness exists. This is defined by the existence of an **Extractor ($\mathcal{E}$)** that can recover $w$ from a successful adversary: $\exists \mathcal{E} \; \forall P^* \; \Pr[w \leftarrow \mathcal{E}^{P^*}(x) : R(x,w)=1] \geq \Pr[\langle P^*, V \rangle(x) = 1] - \mathit{negl}(\lambda)$.
 
 #### 3. Zero-Knowledge
-The interaction reveals nothing but the validity of the statement. The verifier's view of the interaction can be simulated by a Simulator $S$ that does not know $w$.
-$$
-\mathsf{View}_V(\langle P, V \rangle(x, w)) \approx S(x) .
-$$
-
+The interaction reveals nothing but the validity of the statement. The verifier's view of the interaction can be simulated by a Simulator $S$ that does not know $w$: $\mathsf{View}_V(\langle P, V \rangle(x, w)) \approx S(x)$.
 ### Simple examples
 
 #### Proving the color of the card drawn from a standard deck of cards
