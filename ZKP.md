@@ -107,7 +107,7 @@ While this physical example uses a “process of elimination”, digital ZKPs li
 * The “standard 52-card deck” rules act as the *Relation* ($R$).
 
 
-#### Sudoku board
+#### Sudoku board ([GNPR protocol](https://link.springer.com/article/10.1007/s00224-008-9119-9))
 
 Imagine you (the Prover) claim to have solved a difficult Sudoku, and your friend (the Verifier) wants to be sure you aren't lying but doesn't want to see the solution yet. We shall use a physical card protocol.
 
@@ -363,7 +363,7 @@ In a typical interactive "Sigma protocol," there are three steps:
 
 ### **The "Sudoku" Connection**
 
-In the above Sudoku example, if you used Fiat-Shamir, you wouldn't wait for a friend to tell you "Check the Rows." Instead, you would take a photo of your face-down card layout, **hash that photo**, and use the resulting hash value to determine which constraint (Rows, Cols, or Grids) you must reveal. Because you committed to the cards *before* knowing the hash, you couldn't have cheated!
+In the variant of the above [Sudoku example](#Sudoku board), if you used Fiat-Shamir, you wouldn't wait for a friend to tell you "Check the Rows." Instead, you would take a photo of your face-down card layout, **hash that photo**, and use the resulting hash value to determine which constraint (Rows, Cols, or Grids) you must reveal. Because you committed to the cards *before* knowing the hash, you couldn't have cheated!
 
 ***
 
