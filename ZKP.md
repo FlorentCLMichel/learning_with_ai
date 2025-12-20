@@ -64,7 +64,7 @@ If the statement is true and the Prover is honest, the Verifier will be convince
 #### 2. Soundness (and Knowledge Soundness)
 
 * **Soundness:** A malicious Prover cannot convince a Verifier of a false statement: $\forall P^*, x \notin L \Rightarrow \Pr[\langle P^*, V \rangle(x) = 1] \leq \mathit{negl}(\lambda)$.
-    
+  
 * **Knowledge Soundness:** A stronger property. If a Prover convinces the Verifier, they must *know* the witness, not just that a witness exists. This is defined by the existence of an **Extractor ($\mathcal{E}$)** that can recover $w$ from a successful adversary: $\exists \mathcal{E} \; \forall P^* \; \Pr[w \leftarrow \mathcal{E}^{P^*}(x) : R(x,w)=1] \geq \Pr[\langle P^*, V \rangle(x) = 1] - \mathit{negl}(\lambda)$.
 
 #### 3. Zero-Knowledge
@@ -192,14 +192,44 @@ The "Zoo" of ZK protocols is diverse. Here is how the main families compare:
 
 ### Recursion & Aggregation
 To scale ZKPs, we can verify proofs *inside* other proofs.
-* **Recursion:** A ZKP circuit that verifies a ZKP proof. Allows for infinite chains of computation (IVC) (e.g., Halo2).
+* **Recursion:** A ZKP circuit that verifies a ZKP proof. Allows for infinite chains of computation *via* Incrementally Verifiable Computation (IVC) (e.g., Halo2):
+
+  * IVC is a powerful technique that allows a Prover to prove the correctness of a long-running, multi-step computation by providing a proof for each step that "incorporates" the proof of the previous step. Instead of generating one massive proof for an entire 10-hour computation, IVC allows you to:
+
+    1. Perform Step 1 and generate Proof 1.
+
+    2. Perform Step 2 and generate Proof 2, which proves both Step 2 and that Proof 1 was valid.
+
+    3. Continue this until the end.
+
+    The final result is a single, small proof that convinces a Verifier the *entire* chain of computation was performed correctly. The Verifier only needs to check the very last proof in the chain to be sure that every preceding step—no matter how many there were—was correct.
+
 * **Folding (Nova):** A newer technique to accumulate multiple instances of a computation into a single instance before proving.
+
+  * The basic idea of folding is to take two mathematical problems (specifically **R1CS** instances) and combine them into one. Imagine you have an existing proof of $N$ steps (the **accumulator**) and a new step you just performed. To "fold" them, the Verifier picks a random number $r$. The Prover then creates a linear combination of the two instances: $\text{New Instance} = \text{Instance}_1 + r \cdot \text{Instance}_2$. Because of the properties of the commitment scheme (which is **additively homomorphic**), the Verifier can verify this combination very cheaply without looking at the full witnesses.
+  * **The Problem: The "Cross-Terms".** If you simply add two quadratic equations together, you get messy "cross-terms" ($2ab$) that break the original structure. Nova solves this by using a "relaxed" version of the math that includes an **error vector ($E$)** and a **scaling factor ($u$)**. The folding process basically shuffles these cross-terms into the error vector $E$. The Verifier only needs to check a small commitment to this error vector rather than the whole thing.
+
+
+The table below gives a brief conparison of traditional recursion and Nova:
+
+| **Traditional Recursion**                                    | **Nova Folding**                                             |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| **Heavy:** Each step verifies a full SNARK proof (FFTs, pairings). | **Light:** Each step only performs a few group additions and scalar multiplications. |
+| **Complex:** Requires "Cycles of Curves" to avoid non-native arithmetic. | **Simple:** Works on any standard elliptic curve.            |
+| **Slow Prover:** High memory and CPU usage.                  | **Fast Prover:** Up to 100x faster than traditional methods like Plonky2. |
 
 ### Mathematical Foundations
 ZKPs rely on the hardness of specific problems:
-1.  **Discrete Logarithm:** Hard to find $a$ in $g^a$.
+1.  **Discrete Logarithm:** Given a group $G$, an element $g$ of $G$, and a natural integer $a$, it is (under some conditions) hard to find $a$ from $g^a$.
 2.  **Elliptic Curve Pairings:** Bilinear maps $e: G_1 \times G_2 \to G_T$ that allow checking multiplication relationships in encrypted data.
-3.  **Knowledge of Exponent (KEA):** If you can output $g^a$ and $g^{\alpha a}$, you must know $a$.
+3.  **Knowledge of Exponent Assumption (KEA):** If you can output $g^a$ and $g^{\alpha a}$ for some secret $\alpha$, you must know $a$.
+    * The Verifier (or the setup ceremony) publishes two values: $g$ and $g^\alpha$.
+      * In a real SNARK, the setup provides many pairs: $(g^1, g^\alpha), (g^s, g^{s\alpha}), (g^{s^2}, g^{s^2\alpha}), \dots$.
+    * They then **destroy $\alpha$** so that nobody in the world knows its numerical value.
+    * If the prover knows $a$, she can raise rthe two values to the power $a$ to get $g^a$ and $g^{\alpha a}$. 
+      * In a real SNARK, they pick some coefficients $c_i$ and compute $A = \prod (g^{s^i})^{c_i} = g^{\sum c_i s^i}$, $B = \prod (g^{s^i \alpha})^{c_i} = g^{\alpha \sum c_i s^i}$.
+    * The KEA states that if the prover can generate two values $A$ and $B$ such that $B = A^\alpha$, then must know an exponent $a$ such that $A = g^a$.
+      * Or, in a real SNARK, the coefficients $c_i$.
 
 ---
 
