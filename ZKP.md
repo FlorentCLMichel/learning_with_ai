@@ -84,7 +84,7 @@ The interaction reveals nothing but the validity of the statement. The verifier'
 
 1. **Completeness:**
     * **Definition:** If the statement is true and both parties follow the rules, the Verifier will be convinced.
-    * **In this example:** If the Prover actually drew a red card, then all 26 black cards must still be in the remaining pile of 51. By showing all 26 black cards to the Verifier, the Prover successfully completes the protocol, and the Verifier is logically forced to accept that the hidden card is red.
+    * **In this example:** If the Prover actually drew a red card, then all 26 black cards must still be in the remaining pile of 51, the Prover successfully completes the protocol, and the Verifier is logically forced to accept that the hidden card is red.
 
 2. **Soundness:**
     * **Definition:** If the statement is false, a cheating Prover cannot convince the Verifier.
@@ -100,20 +100,20 @@ The interaction reveals nothing but the validity of the statement. The verifier'
 
 **Comparison to Digital ZKPs:**
 
-While this physical example uses a "process of elimination," digital ZKPs like SNARKs use *Polynomial Commitments* to achieve the same effect.
+While this physical example uses a “process of elimination”, digital ZKPs like SNARKs use *Polynomial Commitments* to achieve the same effect.
 
-* In the card game, "revealing the black cards" is like the *Proof* ($\pi$).
-* The "hidden red card" is the *Witness* ($w$).
-* The "standard 52-card deck" rules act as the *Relation* ($R$).
+* In the card game, “revealing the black cards” is like the *Proof* ($\pi$).
+* The “hidden red card” is the *Witness* ($w$).
+* The “standard 52-card deck” rules act as the *Relation* ($R$).
 
 
-#### Sudoku board
+#### Sudoku board (Naor protocol)
 
 Imagine you (the Prover) claim to have solved a difficult Sudoku, and your friend (the Verifier) wants to be sure you aren't lying but doesn't want to see the solution yet. We shall use a physical card protocol.
 
 1. **Setup (The Commitment):**
     * You take three identical decks of cards.
-    * For every cell on the Sudoku board, you place three cards face-down. These cards represent the number in your solution (e.g., if a cell is a "5", you place three 5s there).
+    * For every cell on the Sudoku board, you place $n$ cards face-down, where $n$ is the maximum number of iterations. These cards represent the number in your solution (e.g., if a cell is a "5", you place three 5s there).
     * For the pre-filled "hint" numbers already on the board, you place those three cards face-up so the Verifier can see they match the puzzle. Once they are satisfied, you flip them face-down. 
 
 2. **The Challenge:** The Verifier now chooses one of three "challenges" at random:
@@ -126,13 +126,19 @@ Imagine you (the Prover) claim to have solved a difficult Sudoku, and your frien
     * Crucially, you shuffle each packet thoroughly before handing it to the Verifier.
     * The Verifier opens the packets. They see nine cards numbered 1 through 9 in each packet
 
+Steps 2 and 3 are repeated for the other two challenges, in an order chosen randomly. 
+
 **Why this works:**
 
 * **Completeness:** If you actually have the correct solution, you will always be able to produce packets containing 1–9.
 
-* **Zero-Knowledge:** Because the packets were shuffled, the Verifier sees that the numbers 1–9 are present, but they have no idea which number came from which cell. The "where" information is destroyed by the shuffle.
+* **Zero-Knowledge:** Because the packets were shuffled, the Verifier sees that the numbers 1–9 are present, but they have no idea which number came from which cell. The “where” information is destroyed by the shuffle.
 
-* **Soundness:** If you cheated and have two "5s" in a row, one of your packets will eventually be missing a number. Since the Verifier can pick rows, columns, or subgrids, a cheater has a high chance of being caught. To make the proof "mathematically certain," you simply repeat this process multiple times with fresh cards.
+* **Soundness:** If you cheated and have two "5s" in a row, one of your packets will eventually be missing a number. Since the Verifier can pick rows, columns, or subgrids, a cheater has a high chance of being caught. To make the proof “mathematically certain,” you simply repeat this process multiple times with fresh cards.
+
+**Note:** It is critical that the challenges are chosen randomly and not communicated to the Prover before Setup; otherwise, the Prover could generate different solutions for the three types of challenges.
+
+**Variation:** Alternatively, during the setup phase the Prover could put $n$ cards in each cell (where $n$ is a pre-determined number of iterations) and steps 2. and 3. could be repeated as is, with the challenge being chosen at random between the three possible ones at each iteration.
 
 ---
 
