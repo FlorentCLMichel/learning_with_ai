@@ -225,7 +225,7 @@ ZKPs rely on the hardness of specific problems:
 3.  **Knowledge of Exponent Assumption (KEA):** If you can output $g^a$ and $g^{\alpha a}$ for some secret $\alpha$, you must know $a$.
     * The Verifier (or the setup ceremony) publishes two values: $g$ and $g^\alpha$.
       * In a real SNARK, the setup provides many pairs: $(g^1, g^\alpha), (g^s, g^{s\alpha}), (g^{s^2}, g^{s^2\alpha}), \dots$.
-    * They then **destroy $\alpha$** so that nobody in the world knows its numerical value.
+    * They then destroy $\alpha$ so that nobody in the world knows its numerical value.
     * If the prover knows $a$, she can raise rthe two values to the power $a$ to get $g^a$ and $g^{\alpha a}$. 
       * In a real SNARK, they pick some coefficients $c_i$ and compute $A = \prod (g^{s^i})^{c_i} = g^{\sum c_i s^i}$, $B = \prod (g^{s^i \alpha})^{c_i} = g^{\alpha \sum c_i s^i}$.
     * The KEA states that if the prover can generate two values $A$ and $B$ such that $B = A^\alpha$, then must know an exponent $a$ such that $A = g^a$.
