@@ -21,7 +21,7 @@ A **Zero-Knowledge Proof (ZKP)** is a cryptographic method where a **Prover** co
 * **Verifier ($V$):** The party checking the proof validity without access to $w$.
 * **Simulator ($S$):** A theoretical construct used to prove the “Zero-Knowledge” property; if a simulator can generate a transcript that indistinguishable from a real execution from the point of view of $V$ without knowing $w$, the protocol leaks no knowledge.
 
-The ASCII diagram below shows, schematically and in a simplified way, a protocol for a Non-Interactive Zero-Knowledge (NIZK) proof system, more specifically a SNARK (see below). A ZK proof is said *Non-Interactive* if it requires only a single message from the prover to the verifier, rather than multiple rounds of back-and-forth communication. These systems are typically enabled by either a "Trusted Setup" or the "Fiat-Shamir heuristic" (which turns an interactive protocol into a non-interactive one). 
+The ASCII diagram below shows, schematically and in a simplified way, a protocol for a Non-Interactive Zero-Knowledge (NIZK) proof system, more specifically a [SNARK](#System Comparison) A ZK proof is said *Non-Interactive* if it requires only a single message from the prover to the verifier, rather than multiple rounds of back-and-forth communication. These systems are typically enabled by either a "Trusted Setup" or the ["Fiat-Shamir heuristic"](#The Fiat-Shamir Heuristic) (which turns an interactive protocol into a non-interactive one). 
 
 ```
                                 +-------------------+
