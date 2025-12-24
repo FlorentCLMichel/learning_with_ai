@@ -3,16 +3,16 @@
 ## Introduction
 
 ### What is a ZKP?
-A **Zero-Knowledge Proof (ZKP)** is a cryptographic method where a **Prover** convinces a **Verifier** that a statement is true without revealing the underlying secret information (the **witness**). It involves: 
+A **Zero-Knowledge Proof (ZKP)** is a cryptographic method where a **Prover** convinces a **Verifier** that a statement is true without revealing the underlying secret information (the **witness**).
 
 * **Key elements:**
     * A public *statement* $x$, the claim being proved (*e.g.*, “I know a preimage of this hash value”).
     * A private *witness* $w$ known to the prover (*e.g.* the preimage itself).
     * A relation $R$ that takes the public statement $x$ and the private witness $w$ as inputs, and outputs a binary result (1 or 0) such that $R(x,w) = 1$ if and only if $w$ is a valid witness for $x$ (*e.g.* if applying the hash function to $w$ gives $x$).
-    * The *language* $L$ for the relation $R$ is the set of of all statements for which a valid witness exists (*e.g.* the set of all possible hashes).
+    * The *language* $L$ for the relation $R$ is the set of all statements for which a valid witness exists (*e.g.* the set of all possible hashes).
 * **Core Promise:** The verifier learns only that there exists a witness $w$ such that $R(x,w) = 1$, and nothing else.
 * **Key Use Cases:**
-    * **Privacy:** Authenticating without revealing passwords, or private transactions (*e.g.*, Zcash, Tornado Cash).
+    * **Privacy:** Authenticating without revealing passwords, or private transactions on blockchains (*e.g.*, Zcash, Tornado Cash).
     * **Scalability:** In a blockchain context, verifying complex computations off-chain to save on-chain gas (*e.g.*, zk-Rollups).
 
 ### Fundamental Actors
@@ -38,7 +38,8 @@ The ASCII diagram below shows, schematically and in a simplified way, a protocol
    +----------+                  +-----------------+                  +----------+
         |                                 |                                 |
         | Witness (w) [Secret]            |                                 |
-        | Statement (x) [Public]          |   Common Reference String (CRS) |
+        | Statement (x) [Public]          |                                 |
+        |                                 |   Common Reference String (CRS) |
         | <-----------------------------------------------------------------|
         |                                 |                                 |
         | [Computes Proof]                |                                 |
