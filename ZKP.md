@@ -73,7 +73,7 @@ If the statement is true and the Prover is honest, the Verifier will be convince
 The interaction reveals nothing but the validity of the statement. The verifier's view of the interaction can be simulated by a Simulator $S$ that does not know $w$: $\mathsf{View}_V(\langle P, V \rangle(x, w)) \approx S(x)$.
 ### Simple examples
 
-#### Proving the color of the card drawn from a standard deck of cards
+#### Proving the color of the card drawn from a standard deck
 
 **Protocol Decription:**
 
@@ -115,7 +115,7 @@ Imagine you (the Prover) claim to have solved a difficult Sudoku, and your frien
 
 1. **Setup (The Commitment):**
     * You take three identical decks of cards.
-    * For every cell on the Sudoku board, you place $n$ cards face-down, where $n$ is the maximum number of iterations. These cards represent the number in your solution (e.g., if a cell is a "5", you place three 5s there).
+    * For every cell on the Sudoku board, you place three cards face-down. These cards represent the number in your solution (e.g., if a cell is a "5", you place three 5s there).
     * For the pre-filled "hint" numbers already on the board, you place those three cards face-up so the Verifier can see they match the puzzle. Once they are satisfied, you flip them face-down. 
 
 2. **The Challenge:** The Verifier now chooses one of three "challenges" at random:
@@ -138,7 +138,7 @@ Steps 2 and 3 are repeated for the other two challenges, in an order chosen rand
 
 * **Soundness:** If you cheated and have two "5s" in a row, one of your packets will eventually be missing a number. Since the Verifier can pick rows, columns, or subgrids, a cheater has a high chance of being caught. To make the proof “mathematically certain,” you simply repeat this process multiple times with fresh cards.
 
-**Note:** It is critical that the challenges are chosen randomly and not communicated to the Prover before Setup; otherwise, the Prover could generate different solutions for the three types of challenges.
+**Note:** It is critical that the challenges are chosen randomly and not communicated to the Prover before Setup; otherwise, the Prover could generate different solutions for the three types of challenges without being caught.
 
 **Variation:** Alternatively, during the setup phase the Prover could put $n$ cards in each cell (where $n$ is a pre-determined number of iterations) and steps 2. and 3. could be repeated as is, with the challenge being chosen at random between the three possible ones at each iteration.
 
