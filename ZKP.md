@@ -21,7 +21,7 @@ A **Zero-Knowledge Proof (ZKP)** is a cryptographic method where a **Prover** co
 * **Verifier ($V$):** The party checking the proof validity without access to $w$.
 * **Simulator ($S$):** A theoretical construct used to prove the “Zero-Knowledge” property; if a simulator can generate a transcript that is indistinguishable from a real execution from the point of view of $V$ without knowing $w$, the protocol leaks no knowledge.
 
-The ASCII diagram below shows, schematically and in a simplified way, a protocol for a Non-Interactive Zero-Knowledge (NIZK) proof system, more specifically a [SNARK](#System Comparison) A ZK proof is said *Non-Interactive* if it requires only a single message from the prover to the verifier, rather than multiple rounds of back-and-forth communication. These systems are typically enabled by either a "Trusted Setup" or the ["Fiat-Shamir heuristic"](#The Fiat-Shamir Heuristic) (which turns an interactive protocol into a non-interactive one). 
+The ASCII diagram below shows, schematically and in a simplified way, a protocol for a Non-Interactive Zero-Knowledge (NIZK) proof system, more specifically a [SNARK](#System Comparison) A ZK proof is said *Non-Interactive* if it requires only a single message from the prover to the verifier, rather than multiple rounds of back-and-forth communication. These systems are typically enabled by either a ["Trusted Setup"](#The Zero-Knowledge Trusted Setup (CRS Ceremony)) or the ["Fiat-Shamir heuristic"](#The Fiat-Shamir Heuristic) (which turns an interactive protocol into a non-interactive one). 
 
 ```
                                 +-------------------+
@@ -167,26 +167,51 @@ Once the circuit is arithmetized into polynomials, the prover "commits" to them.
 ## Types of Proof Systems
 
 ### Interactive vs. Non-Interactive (NIZK)
-* **Interactive:** Requires multiple rounds of back-and-forth communication (e.g., Schnorr).
-* **Non-Interactive:** The prover sends a single message. This is achieved via the **Fiat-Shamir Heuristic**, which replaces the Verifier's random challenges with the output of a cryptographic hash function.
+* **Interactive:** Requires multiple rounds of back-and-forth communication (*e.g.*, Schnorr).
+* **Non-Interactive:** The prover sends a single message. This is achieved *via* a [trusted setup](The Zero-Knowledge Trusted Setup (CRS Ceremony)) or the [Fiat-Shamir Heuristic](), which replaces the Verifier's random challenges with the output of a cryptographic hash function.
 
 ### System Comparison
-The "Zoo" of ZK protocols is diverse. Here is how the main families compare:
+The three main families of ZKPs are *SNARKs*, *STARKs*, and *Bulletproofs*. Here is a brief comparison ($n$ denotes the number of gates):
 
 | Property | SNARK | STARK | Bulletproofs |
 | :--- | :--- | :--- | :--- |
 | **Full Name** | Succinct Non-interactive Argument of Knowledge | Scalable Transparent Argument of Knowledge | N/A |
 | **Trusted Setup** | **Required** (Usually) | **None** (Transparent) | **None** |
-| **Proof Size** | Tiny (~288 B) | Large (~100 KB) | Logarithmic |
-| **Verifier Time** | Milliseconds (Fastest) | Medium | Slow |
+| **Proof Size** | Constant; ~250 B to 1kB | $\Theta(\log^2 n)$, ~45KB to >200kB in practice | $\Theta(\log n)$, ~1KB in practice |
+| **Verifier Time** | Constant, Fastest (~1ms) | $\Theta(\log^2 n)$, Medium (a few ms) | $\Theta(n)$ Slow (15ms to seconds) |
 | **Crypto Assumption**| Elliptic Curve Pairings + Knowledge-of-Exponent Assumption | Hash Functions (Post-Quantum) | Discrete Log |
 | **Best Use Case** | L2 Rollups (ZkSync, Aztec), Mobile clients | High-throughput DEX (StarkNet), Data availability | Privacy coins (Monero), Range proofs |
 
-**Note on Setup:**
+#### **SNARKs: The "Gold Standard" for Size**
 
-* **Groth16:** Requires a setup *per circuit*.
-* **PLONK:** Requires a *universal* setup (can be reused).
-* **STARKs:** No setup required (Transparent).
+**Proof size:** ~250 bytes to 1 KB
+
+SNARKs are designed to be "Succinct." Their proof size is constant, meaning the proof doesn't get bigger even if the computation you're proving is massive.
+
+**Commonly-used setups:**
+
+- **Groth16 (Smallest):** ~260–280 bytes. It consists of just 3 elliptic curve elements.
+- **PLONK (Universal):** ~450–900 bytes. It is slightly larger than Groth16 but still fits comfortably in a single network packet.
+
+#### **Bulletproofs: The "Middle Ground"**
+
+**Proof size:** ~1 KB to 2 KB
+
+Bulletproofs have a logarithmic proof size.
+
+- **Small Circuits:** For a simple range proof (e.g., proving your age is > 18), the proof is about 700 bytes to 1 KB.
+- **Scaling:** Even for very large computations, the logarithmic growth keeps the size manageable (usually under 2 KB). This is why they are popular for confidential transactions in Monero.
+
+#### **STARKs: The “Heavylifters”
+
+**Proof size:** ~45 KB to 200+ KB
+
+STARKs are significantly larger because they don't use “compact” elliptic curve math; instead, they use Hash Functions and Merkle Trees to achieve quantum resistance and transparency (no trusted setup).
+
+- **The Cost of Transparency:** Because you have to include many Merkle paths in the proof to convince the verifier, the size jumps to dozens or hundreds of kilobytes.
+- **L2 Usage:** On networks like Starknet, these large proofs are “batched” so that one 100 KB proof covers 10,000 transactions, making the cost-per-transaction very low despite the large total size.
+
+Think of a SNARK like a sealed wax signet: it's tiny and proves the king signed the letter, but you had to trust the person who made the signet ring (the Trusted Setup). A STARK is more like a massive legal binder: it contains so much evidence and cross-referenced footnotes (Merkle paths) that you don't need to trust anyone—the evidence is all right there in the binder.
 
 
 ---
