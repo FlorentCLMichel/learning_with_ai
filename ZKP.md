@@ -147,15 +147,16 @@ Steps 2 and 3 are repeated for the other two challenges, in an order chosen rand
 ## The ZKP Pipeline: How it Works
 ZKP systems generally follow a transformation pipeline to turn code into a proof.
 
-### Step 1: Arithmetization
-The process of converting a computational statement (code) into a system of polynomial equations.
+### Step 1: [Arithmetization](#The Arithmetization Process)
+[Arithmetization](#The Arithmetization Process) is the process of converting a computational statement (code) into a system of polynomial equations.
+
 1.  **Computation Trace:** Define the execution as a table of register states.
 2.  **Constraint System:**
     * **R1CS (Rank-1 Constraint System):** Converts logic into linear algebra ($A \cdot z \circ B \cdot z = C \cdot z$). Used heavily in SNARKs.
     * **AIR (Algebraic Intermediate Representation):** Expresses constraints as transition functions between rows of a trace table. Used in STARKs.
     * **Plonkish:** Uses custom gates and general constraints ($q_L a + q_R b + ... = 0$).
 
-### Step 2: Polynomial Commitments
+### Step 2: [Polynomial Commitments](#Polynomial Commitments)
 Once the circuit is arithmetized into polynomials, the prover "commits" to them. The Verifier can later ask for evaluations of these polynomials at specific points to check the constraints.
 * **KZG:** Constant-sized proofs, fast verification, requires Trusted Setup (Pairing-based).
 * **FRI:** Used in STARKs. Hash-based, quantum-resistant, transparent, but larger proofs.
