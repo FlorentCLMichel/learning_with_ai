@@ -57,13 +57,13 @@ In the following, we will informally denote by $\langle P, V \rangle$ the intera
 
 For a ZKP system to be valid, it must satisfy three properties:
 
-#### 1. Completeness
-If the statement is true and the Prover is honest, the Verifier will be convinced with overwhelming probability (*statistical completeness*) or with certainty (*perpecf completeness*). Completeness can be formalised as follows:
+#### 1. Completeness (Perfect or Statistical)
+If the statement is true and the Prover is honest, the Verifier will be convinced with overwhelming probability (*statistical completeness*) or with certainty (*perfect completeness*). Completeness can be formalised as follows:
 
 * **Statistical Completeness:** $R(x, w) = 1 \Rightarrow \Pr[\langle P, V \rangle(x, w) = 1] = 1 - \mathit{negl}(\lambda)$.
 * **Perfect Completeness:** $R(x, w) = 1 \Rightarrow \Pr[\langle P, V \rangle(x, w) = 1] = 1$.
 
-#### 2. Soundness (and Knowledge Soundness)
+#### 2. Soundness (or Knowledge Soundness)
 
 * **Soundness:** A malicious Prover cannot convince a Verifier of a false statement: $\forall P^*, x \notin L \Rightarrow \Pr[\langle P^*, V \rangle(x) = 1] \leq \mathit{negl}(\lambda)$.
   
