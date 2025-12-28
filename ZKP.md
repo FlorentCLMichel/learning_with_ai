@@ -285,18 +285,23 @@ ZKPs rely on the hardness of specific problems:
 
 ## The Arithmetization Process
 
-Arithmetization is the crucial first step in any Zero-Knowledge Proof system. It is the process of converting an arbitrary computation (like a program or a financial transaction) into a large system of mathematical constraints that can be efficiently checked using polynomial evaluations.
-
-The goal is to translate the logic of a program into a set of equations where the solution space is the set of valid execution traces.
+Arithmetization is the crucial first step in any Zero-Knowledge Proof system. It is the process of converting an arbitrary computation (like a program or a financial transaction) into a system of mathematical constraints that can be efficiently checked using polynomial evaluations. The goal is to translate the logic of a program into a set of equations where the solution space is the set of valid execution traces.
 
 ### Program to Constraints
 
 The type of constraint system used depends on the ZKP scheme:
 
-| Constraint System                               | Scheme Used In                            | Description                                                  |
-| ----------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------ |
-| **R1CS** (Rank-1 Constraint System)             | SNARKs (e.g., Groth16, PLONK, before QAP) | This converts the computation into a system of linear algebra equations: $$A \cdot z \circ B \cdot z = C \cdot z$$ Where $A, B, C$ are matrices defining the circuit, $z$ is the wire vector (public inputs, private witness, and intermediate values), and $\circ$ is the Hadamard (element-wise) product. |
-| **AIR** (Algebraic Intermediate Representation) | STARKs                                    | This models the computation as an execution trace (a 2D table of register states). Constraints are expressed as transition functions between consecutive rows (steps) in the trace: $\forall i, F(\mathsf{trace}[i], \mathsf{trace}[i+1]) = 0$ |
+| Constraint System                               | Scheme Used In                | Description                                                  |
+| ----------------------------------------------- | ----------------------------- | ------------------------------------------------------------ |
+| **R1CS** (Rank-1 Constraint System)             | SNARKs (e.g., Groth16, PLONK) | This converts the computation into a system of linear algebra equations: $$A \cdot z \circ B \cdot z = C \cdot z$$ Where $A, B, C$ are matrices defining the circuit, $z$ is the wire vector (public inputs, private witness, and intermediate values), and $\circ$ is the Hadamard (element-wise) product. |
+| **AIR** (Algebraic Intermediate Representation) | STARKs                        | This models the computation as an execution trace (a 2D table of register states). Constraints are expressed as transition functions between consecutive rows (steps) in the trace: $\forall i, F(\mathsf{trace}[i], \mathsf{trace}[i+1]) = 0$ |
+| **Arithmetic Circuits** (often via R1CS) | Bulletproofs   | Models computation as a directed acyclic graph of addition and multiplication gates. Unlike SNARKs, Bulletproofs do not require a [QAP](#Constraints to Polynomials (The QAP Step)) or trusted setup; instead, they use a *recursive inner product argument* to prove that the input/output of the gates satisfy the circuit constraints. |
+
+**R1CS (SNARKs):** Is like a **static snapshot** of a circuit. You define the whole “wiring” of the machine upfront as a set of matrices. It is very efficient but rigid.
+
+**AIR (STARKs):** Is like a **physics simulation over time**. You don't define every wire; you define the “laws of motion” (the transition function) and apply them repeatedly to a state vector.
+
+**Bulletproofs:** Is like a **pedantic accountant**. It walks through the circuit and proves that for every multiplication gate $a \cdot b = c$, the relationship holds, using a clever logarithmic-sized proof to compress all these checks into one.
 
 ### Constraints to Polynomials (The QAP Step)
 
@@ -310,7 +315,7 @@ For SNARKs using R1CS, the next step often involves the *Quadratic Arithmetic Pr
 
 Modern systems, like PLONK and STARKs, often use more flexible arithmetization techniques:
 
-* **Plonkish Arithmetization:** This uses a generic gate constraint that can be customized: $$q_L \cdot a + q_R \cdot b + q_O \cdot c + q_M \cdot a \cdot b + q_C = 0$$ This formula combines linear terms ($a, b, c$), a multiplication term ($a \cdot b$), and constant terms into one equation. It allows for the use of "Custom Gates" for optimized circuit implementations.
+* **Plonkish Arithmetization:** This uses a generic gate constraint that can be customized: $$q_L \cdot a + q_R \cdot b + q_O \cdot c + q_M \cdot a \cdot b + q_C = 0$$ This formula combines linear terms ($a, b, c$), a multiplication term ($a \cdot b$), and constant terms into one equation. It allows for the use of custom gates for optimized circuit implementations.
 * **Polynomial IOPs (Interactive Oracle Proofs):** This is the high-level framework that underlies both Plonkish and STARKs. It separates the proof into:
     * **Oracles:** Prover provides polynomial data structures.
     * **Queries:** Verifier asks for evaluations at specific points.
