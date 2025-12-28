@@ -440,30 +440,30 @@ A setup ceremony involves many participants (often hundreds or thousands) collab
 
 The **Fiat-Shamir heuristic** is a technique used to transform an **interactive** proof (where a Prover and Verifier talk back and forth) into a **non-interactive** proof (where the Prover sends a single, standalone message).
 
-The Verifier's job is to provide a random "challenge." The Fiat-Shamir heuristic essentially replaces the human Verifier with a **cryptographic hash function**.
+The Verifier's job is to provide a random “challenge”. The Fiat-Shamir heuristic essentially replaces the human Verifier with a **cryptographic hash function**.
 
 ### **How the Transformation Works**
 
-In a typical interactive "Sigma protocol," there are three steps:
+In a typical interactive “Sigma protocol”, there are three steps:
 
-1. **Commitment:** The Prover sends a message $t$ (a random "blinded" version of their secret).
+1. **Commitment:** The Prover sends a message $t$ (a random “blinded” version of their secret).
 2. **Challenge:** The Verifier sends a random value $c$.
 3. **Response:** The Prover sends a response $z$ based on their secret, the randomness in $t$, and the challenge $c$.
 
 **With Fiat-Shamir, the interaction is removed:**
 
 - Instead of waiting for the Verifier to send $c$, the Prover computes the challenge themselves using a hash function: **$c = \text{Hash}(x, t)$**.
-- Because a cryptographic hash function is "unpredictable," the Prover cannot "choose" a challenge that makes a fake proof work.14 They are effectively forced to use a random-looking value that depends entirely on their initial commitment.
+- Because a cryptographic hash function is “unpredictable”, the Prover cannot “choose” a challenge that makes a fake proof work. They are effectively forced to use a random-looking value that depends entirely on their initial commitment.
 
 ### **Why It Matters**
 
-- **Scalability:** The Prover can generate the proof once and post it on a blockchain or a public server.15 Anyone (the "Public") can verify it at any time without the Prover needing to be online.
-- **Transferability:** Since the challenge is fixed by the hash of the data, the proof is "bound" to that specific statement and commitment. It can be verified by multiple parties without re-running the protocol.
-- **Security:** This transformation is considered secure in the **Random Oracle Model (ROM)**, assuming the hash function behaves like a perfectly random function.
+- **Scalability:** The Prover can generate the proof once and post it on a blockchain or a public server. Anyone (the “Public”) can verify it at any time without the Prover needing to be online.
+- **Transferability:** Since the challenge is fixed by the hash of the data, the proof is “bound” to that specific statement and commitment. It can be verified by multiple parties without re-running the protocol.
+- **Security:** This transformation is considered secure in the Random Oracle Model (ROM), assuming the hash function behaves like a perfectly random function.
 
-### **The "Sudoku" Connection**
+### **The “Sudoku” Connection**
 
-In the variant of the above [Sudoku example](#Sudoku board), if you used Fiat-Shamir, you wouldn't wait for a friend to tell you "Check the Rows." Instead, you would take a photo of your face-down card layout, **hash that photo**, and use the resulting hash value to determine which constraint (Rows, Cols, or Grids) you must reveal. Because you committed to the cards *before* knowing the hash, you couldn't have cheated!
+In the variant of the above [Sudoku example](#Sudoku board), if you used Fiat-Shamir, you wouldn't wait for a friend to tell you "Check the Rows." Instead, you would take a photo of your face-down card layout, hash that photo, and use the resulting hash value to determine which constraint (Rows, Cols, or Grids) you must reveal. Because you committed to the cards *before* knowing the hash, you couldn't have cheated!
 
 ***
 
