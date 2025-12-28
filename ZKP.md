@@ -243,18 +243,40 @@ The table below gives a brief conparison of traditional recursion and Nova:
 | **Traditional Recursion**                                    | **Nova Folding**                                             |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | **Heavy:** Each step verifies a full SNARK proof (FFTs, pairings). | **Light:** Each step only performs a few group additions and scalar multiplications. |
-| **Complex:** Requires "Cycles of Curves" to avoid non-native arithmetic. | **Simple:** Works on any standard elliptic curve.            |
+| **Complex:** Requires “Cycles of Curves” to avoid non-native arithmetic. | **Simple:** Works on any standard elliptic curve.            |
 | **Slow Prover:** High memory and CPU usage.                  | **Fast Prover:** Up to 100x faster than traditional methods like Plonky2. |
 
 ### Mathematical Foundations
 ZKPs rely on the hardness of specific problems:
-1.  **Discrete Logarithm:** Given a group $G$, an element $g$ of $G$, and a natural integer $a$, it is (under some conditions) hard to find $a$ from $g^a$.
-2.  **Elliptic Curve Pairings:** Bilinear maps $e: G_1 \times G_2 \to G_T$ that allow checking multiplication relationships in encrypted data.
+1.  **Discrete Logarithm:** Given a finite group $G$, an element $g$ of $G$, and a natural integer $a$, it is (under some conditions) hard to find $a$ from $g^a$. It is worth noting that “hard” in this context usually means that the best-known classical algorithms (like Pollard's Rho) take exponential time in the size of group elements when represented in bits ($\Theta(|G|^{1/2})$). However, this is where quantum resistance comes in: Shor's Algorithm can solve the Discrete Logarithm Promlem (DLP) in polynomial time, which is why STARKs (which don't rely on the DLP) are considered "quantum-safe" while SNARKs and Bulletproofs are not. The conditions for this problem to be classically hard are: 
+
+    1.  **Conditions on the Group $G$:**
+        * **Order of the Group:** The number of elements in the group, denoted as $|G|$, must be a **large prime number** (or have a very large prime factor). If $|G|$ is small, an attacker can use brute force. If $|G|$ is a composite number with many small factors, an attacker can use the Pohlig-Hellman algorithm to solve the problem piece-by-piece.
+        * **Cyclic Nature:** The group (or the subgroup used) must be **cyclic**, meaning every element in it can be expressed as a power of a single “generator” element $g$.
+        * **Structure:** Common secure groups include:
+          - **Multiplicative groups of finite fields:** $(\mathbb{Z}_p^\times)$, where $p$ is a large prime. (Note: for this group, specialised attacks based on the General Number Field Sieve give sub-exponential runtimes.)
+          - **Elliptic Curve groups:** Points on a curve over a finite field. These are currently the standard for ZKPs because they offer the same security as finite fields but with much smaller keys.
+    2.  **Conditions on the Element $g$ (The Generator):**
+        - **High Order:** The element $g$ must be a **primitive root** or a generator of a large prime-order subgroup. If you accidentally pick a $g$ that generates a tiny subgroup (e.g., one that only produces 100 different values), an attacker can find $a$ in milliseconds.
+        - **Publicly Known:** In ZKPs, $g$ is almost always a public constant defined by the protocol (e.g., the generator point $G$ in the Secp256k1 curve used by Bitcoin).
+    3.  **Conditions on the Integer $a$ (The Secret):**
+        - **Uniform Randomness:** The secret $a$ must be chosen **uniformly at random** from $G$. If $a$ is predictable (*e.g.*, “12345” or a low-entropy password), the group's strength doesn't matter.
+        - **Large Size:** To resist the **Baby-step Giant-step** or **Pollard's Rho** algorithms, $a$ must be large enough. By 2025 standards, $a$ should typically be at least **256 bits** long (roughly $2^{256} \approx 10^{77}$, which is close to the estimated number of atoms in the observable universe, betwen $10^{78}$ and $10^{82}$).
+
+2.  **Elliptic Curve Pairings:** Bilinear maps $G_1 \times G_2 \to G_T$ that allow checking multiplication relationships in encrypted data, where $G_1$, $G_2$, and $G_T$ are three distinct cyclic groups of the same prime order. 
+
+    * $G_1$ is the **Base Field Group**: A subgroup of points on the elliptic curve whose coordinates are simple numbers in the base field $\mathbb{F}_p$. This is usually the “smallest” and fastest group to work with.
+    * $G_2$ is the **Extension Field Group**: A subgroup of points on the same curve, but the coordinates are “complex” numbers in an extension field (like $\mathbb{F}_{p^2}$ or $\mathbb{F}_{p^{12}}$). Elements here are much larger and slower to compute than in $G_1$.
+    * $G_T$ is the **Target Group**: This is not an elliptic curve group. It is a multiplicative subgroup of a large finite field (typically $\mathbb{F}_{p^{12}}$). The result of a pairing always lands here.
+
+    Normally, with standard Elliptic Curve math, you can only add encrypted numbers: if you have $A = g^a$ and $B = g^b$, you can compute $g^{a+b}$ by adding the points; but you cannot compute $g^{ab}$ just by looking at $A$ and $B$. A pairing $e: G_1 \times G_2 \to G_T$ allows you to check if $a \times b = c$ without knowing $a, b,$ or $c$: $e(g_1^a, g_2^b) = e(g_1, g_2)^{ab}$. If you also have a value $C = g_1^c$, you can check if $e(g_1^a, g_2^b) = e(C, g_2)$. If the equation holds, then $ab = c$ must be true.
+
 3.  **Knowledge of Exponent Assumption (KEA):** If you can output $g^a$ and $g^{\alpha a}$ for some secret $\alpha$, you must know $a$.
+
     * The Verifier (or the setup ceremony) publishes two values: $g$ and $g^\alpha$.
       * In a real SNARK, the setup provides many pairs: $(g^1, g^\alpha), (g^s, g^{s\alpha}), (g^{s^2}, g^{s^2\alpha}), \dots$.
     * They then destroy $\alpha$ so that nobody in the world knows its numerical value.
-    * If the prover knows $a$, she can raise rthe two values to the power $a$ to get $g^a$ and $g^{\alpha a}$. 
+    * If the prover knows $a$, she can raise the two values to the power $a$ to get $g^a$ and $g^{\alpha a}$. 
       * In a real SNARK, they pick some coefficients $c_i$ and compute $A = \prod (g^{s^i})^{c_i} = g^{\sum c_i s^i}$, $B = \prod (g^{s^i \alpha})^{c_i} = g^{\alpha \sum c_i s^i}$.
     * The KEA states that if the prover can generate two values $A$ and $B$ such that $B = A^\alpha$, then must know an exponent $a$ such that $A = g^a$.
       * Or, in a real SNARK, the coefficients $c_i$.
