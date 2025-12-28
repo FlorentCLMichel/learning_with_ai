@@ -375,9 +375,9 @@ It is the process of generating the **Common Reference String (CRS)**, which con
 
 ### The Common Reference String (CRS)
 
-The CRS is a set of encrypted values derived from a secret, random number (often called the $\tau$ or "toxic waste"). It looks like this:
+The CRS is a set of encrypted values derived from a secret, random number (often called the $\tau$ or “toxic waste”). It looks like this:
 $$
-    \mathsf{CRS} = \left(\{g^{\tau^i}\}_{i=0}^d, \{g^{\alpha \cdot \tau^i}\}_{i=0}^d, ...\right)
+\mathsf{CRS} = \left(\{g^{\tau^i}\}_{i=0}^d, \{g^{\alpha \cdot \tau^i}\}_{i=0}^d, \dots \right)
 $$
 
 * $g$ is the generator of an elliptic curve group.
@@ -386,9 +386,24 @@ $$
 
 The crucial requirement for the system's security is that the secret values ($\tau$ and $\alpha$) must be destroyed immediately after the CRS is generated.
 
+The ellipsis in the above formula may contain the following: 
+
+1. **Additional “Toxic Waste” Factors:** The setup doesn't just use $\tau$ (the point of evaluation) and $\alpha$ (for the Knowledge of Exponent check). It also introduces other secret variables, usually denoted as $\beta, \gamma,$ and $\delta$. These act as additional “locking mechanisms” to ensure the Prover cannot mix terms from different constraints.
+
+   - Elements like $\{g^{\beta \cdot \tau^i}\}_{i=0}^d$ are often included.
+
+   - Elements divided by the secrets (e.g., $g^{\tau^i \cdot t(\tau) / \delta}$) are also included to allow the Verifier to check the "Quotient Polynomial" ($H(x) = P(x) / t(x)$).
+
+2. **Elements in the Second Group ($G_2$):** Since the Verifier uses Pairings ($e: G_1 \times G_2 \to G_T$) to check the proof, the CRS must also contain points from the second group, $G_2$. The ellipsis includes elements like:
+
+   - $\{g_2^{\tau^i}\}_{i=0}^d$
+   - $g_2^\alpha, g_2^\beta, g_2^\gamma, g_2^\delta$
+
+   where $g_2$ is an element of $G_2$.
+
 ### The Knowledge-of-Exponent Assumption (KEA)
 
-The security of SNARKs relies heavily on the Knowledge-of-Exponent Assumption (KEA). In the context of the CRS, KEA means:
+The security of SNARKs relies heavily on the [Knowledge-of-Exponent Assumption (KEA)](#Mathematical Foundations). In the context of the CRS, KEA means:
 
 > If the adversary can compute $g^a$ and $g^{\alpha a}$ using the public CRS, they must know the exponent $a$.
 
@@ -396,9 +411,9 @@ This assumption allows the Verifier to be confident that the Prover knows the wi
 
 ### The Trusted Setup Risk ("Toxic Waste")
 
-The major drawback of non-transparent setups is the security risk associated with the secret $\tau$ (the "toxic waste"):
+The major drawback of non-transparent setups is the security risk associated with the secret $\tau$ (the “toxic waste”):
 
-* **Risk:** If a malicious party retains and uses the secret $\tau$ that generated the CRS, they could potentially forge valid proofs for false statements ($x \notin L$) without knowing the actual witness ($w$). This would break the Soundness of the system.
+* **Risk:** If a malicious party retains and uses the secret $\tau$ that generated the CRS, they could potentially forge valid proofs for false statements ($x \notin L$) and/or without knowing the actual witness ($w$). This would break the Soundness/Knowledge Soundness of the system.
 
 * **Mitigation:** To ensure the secret is destroyed, the setup is performed through a Multi-Party Computation (MPC) Ceremony.
 
