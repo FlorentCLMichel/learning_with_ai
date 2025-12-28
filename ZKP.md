@@ -222,7 +222,7 @@ Think of a SNARK like a sealed wax signet: it's tiny and proves the king signed 
 To scale ZKPs, we can verify proofs *inside* other proofs.
 * **Recursion:** A ZKP circuit that verifies a ZKP proof. Allows for infinite chains of computation *via* Incrementally Verifiable Computation (IVC) (e.g., Halo2):
 
-  * IVC is a powerful technique that allows a Prover to prove the correctness of a long-running, multi-step computation by providing a proof for each step that "incorporates" the proof of the previous step. Instead of generating one massive proof for an entire 10-hour computation, IVC allows you to:
+  * IVC is a powerful technique that allows a Prover to prove the correctness of a long-running, multi-step computation by providing a proof for each step that “incorporates” the proof of the previous step. Instead of generating one massive proof for an entire 10-hour computation, IVC allows you to:
 
     1. Perform Step 1 and generate Proof 1.
 
@@ -234,8 +234,8 @@ To scale ZKPs, we can verify proofs *inside* other proofs.
 
 * **Folding (Nova):** A newer technique to accumulate multiple instances of a computation into a single instance before proving.
 
-  * The basic idea of folding is to take two mathematical problems (specifically **R1CS** instances) and combine them into one. Imagine you have an existing proof of $N$ steps (the **accumulator**) and a new step you just performed. To "fold" them, the Verifier picks a random number $r$. The Prover then creates a linear combination of the two instances: $\text{New Instance} = \text{Instance}_1 + r \cdot \text{Instance}_2$. Because of the properties of the commitment scheme (which is **additively homomorphic**), the Verifier can verify this combination very cheaply without looking at the full witnesses.
-  * **The Problem: The "Cross-Terms".** If you simply add two quadratic equations together, you get messy "cross-terms" ($2ab$) that break the original structure. Nova solves this by using a "relaxed" version of the math that includes an **error vector ($E$)** and a **scaling factor ($u$)**. The folding process basically shuffles these cross-terms into the error vector $E$. The Verifier only needs to check a small commitment to this error vector rather than the whole thing.
+  * The basic idea of folding is to take two mathematical problems (specifically [R1CS](#Program to Constraints) instances) and combine them into one. Imagine you have an existing proof of $N$ steps (the **accumulator**) and a new step you just performed. To “fold” them, the Verifier picks a random number $r$. The Prover then creates a linear combination of the two instances: $\text{New Instance} = \text{Instance}_1 + r \cdot \text{Instance}_2$. Because of the properties of the commitment scheme (which is *additively homomorphic*), the Verifier can verify this combination very cheaply without looking at the full witnesses.
+  * **The Problem: The "Cross-Terms".** If you simply add two quadratic equations together, you get messy “cross-terms” ($2ab$) that break the original structure. Nova solves this by using a “relaxed” version of the math that includes an *error vector* ($E$) and a *scaling factor* ($u$). The folding process basically shuffles these cross-terms into the error vector $E$. The Verifier only needs to check a small commitment to this error vector rather than the whole thing.
 
 
 The table below gives a brief conparison of traditional recursion and Nova:
