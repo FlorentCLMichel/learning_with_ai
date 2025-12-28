@@ -331,7 +331,7 @@ A **Polynomial Commitment Scheme** is a cryptographic tool that allows a Prover 
 
 1. **Commit** to a polynomial $P(x)$ (or a set of polynomials) by generating a short, constant-sized commitment $C$. This is like digitally signing the polynomial.
 
-2. Later, **Prove** that the polynomial evaluates to a specific value $y$ at a specific point $z$ (i.e., $P(z) = y$) by providing a compact proof $\pi$.
+2. Later, **Prove** that the polynomial evaluates to a specific value $y$ at a specific point $z$ (*i.e.*, $P(z) = y$) by providing a compact proof $\pi$.
 
 3. The Verifier can then check the commitment $C$, the evaluation point $z$, the claimed value $y$, and the proof $\pi$ to be convinced, without seeing the full polynomial $P(x)$ itself.
 
@@ -339,8 +339,8 @@ The choice of commitment scheme heavily influences the performance and security 
 
 | Scheme | ZKP System Used In | Security Basis | Trusted Setup? | Proof Size / Verification Time |
 | ------ | ------------------ | -------------- | -------------- | ------------------------------ |
-| **KZG** (Kate-Zaverucha-Goldberg) | SNARKs (e.g., PLONK, Groth16) | Elliptic Curve Pairings (Bilinear Groups) | Yes (Requires CRS) | Constant-sized proofs, very fast verification |
-| **FRI** (Fast Reed-Solomon IOPP) | STARKs	Hash Functions (collision resistance) | No (Transparent setup) | Larger proofs, medium verification |
+| **KZG** (Kate-Zaverucha-Goldberg) | SNARKs (*e.g.*, PLONK, Groth16) | Elliptic Curve Pairings (Bilinear Groups) | Yes (Requires CRS) | Constant-sized proofs, very fast verification |
+| **FRI** (Fast Reed-Solomon IOPP) | STARKs | Hash Functions (collision resistance) | No (Transparent setup) |Larger proofs, medium verification|
 | **IPA** (Inner Product Argument) | Bulletproofs | Discrete Logarithm Problem | No (Transparent setup) | Logarithmic proof size, slowest verification |
 | **DARK** (Diophantine Arguments of Knowledge) | Varied | Groups of Unknown Order | Varies | Aimed at post-quantum security |
 
