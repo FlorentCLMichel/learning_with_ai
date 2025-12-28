@@ -301,7 +301,7 @@ The type of constraint system used depends on the ZKP scheme:
 
 **AIR (STARKs):** Is like a **physics simulation over time**. You don't define every wire; you define the “laws of motion” (the transition function) and apply them repeatedly to a state vector.
 
-**Bulletproofs:** Is like a **pedantic accountant**. It walks through the circuit and proves that for every multiplication gate $a \cdot b = c$, the relationship holds, using a clever logarithmic-sized proof to compress all these checks into one.
+**Bulletproofs:** Is like a **pedantic accountant**. It walks through the circuit and proves that for every multiplication gate $a \cdot b = c$, the relationship holds, using a clever logarithmic-sized proof to compress all these checks into one. While the table separates them, it's worth noting that R1CS is a *format*, not a protocol. Bulletproofs *can* use R1CS as their constraint system (as seen in the `bulletproofs` Rust library), but because they lack a "Universal Setup," they don't benefit from the same "constant-time" verification that Groth16 does. This is why their verification time is $O(n)$ while their proof size is $O(\log n)$.
 
 ### Constraints to Polynomials (The QAP Step)
 
