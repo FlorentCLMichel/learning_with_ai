@@ -252,18 +252,18 @@ This protocol relies on the **Discrete Logarithm Problem**, which is a staple in
 
 #### Step 1: Initialization
 
-Alice and Bob agree on a cyclic group $G$ (like a prime-order subgroup of $(\mathbb{Z}/p\mathbb{Z})^\times$) with generator $g$. Alice also picks a random element $C \in G$ and sends it to Bob.
+Alice and Bob agree on a cyclic group $G$ (like a prime-order subgroup of $(\mathbb{Z}/p\mathbb{Z})^\times$ for some positive integer $p$) with generator $g$. Alice also picks a random element $c \in G$ and sends it to Bob.
 
 #### Step 2: Bob’s Choice
 
 Bob wants message $m_b$. He picks a random exponent $k$:
 
-- If he wants $m_0$ ($b=0$), he sets his first public key $PK_0 = g^k$ and his second $PK_1 = C / g^k$.
-- If he wants $m_1$ ($b=1$), he sets $PK_0 = C / g^k$ and $PK_1 = g^k$.
+- If he wants $m_0$ ($b=0$), he sets his first public key $PK_0 = g^k$ and his second $PK_1 = c / g^k$.
+- If he wants $m_1$ ($b=1$), he sets $PK_0 = c / g^k$ and $PK_1 = g^k$.
 
 Bob sends $PK_0$ to Alice.
 
-> **The "Oblivious" Part:** Alice receives $PK_0$. She can calculate $PK_1 = C / PK_0$. However, because $C$ was random, $PK_0$ looks like a random element of the group to her. She has no way of knowing if Bob knows the discrete log of $PK_0$ or the discrete log of $PK_1$.
+**The "Oblivious" Part:** Alice receives $PK_0$. She can calculate $PK_1 = c / PK_0$. However, because $c$ was random, $PK_0$ looks like a random element of the group to her. She has no way of knowing if Bob knows the discrete log of $PK_0$ or the discrete log of $PK_1$.
 
 #### Step 3: Alice’s Encryption
 
@@ -282,72 +282,104 @@ Because he does *not* know the discrete log of the other public key ($PK_{1-b}$)
 
 ### Why This Matters for MPC
 
-OT is considered the "foundation" of MPC because you can build any complex logic gate (like an AND gate) using multiple OTs.
+OT is considered the foundation of MPC because you can build any complex logic gate (like an AND gate) using multiple OTs.
 
-- **For 2-Party Computation:** It’s how the "Evaluator" in a Garbled Circuit gets the specific keys for their input wires without the "Garbler" knowing what those inputs are.
-- **Efficiency:** While the math above involves expensive modular exponentiation, modern "OT Extension" allows us to perform a few of these "base OTs" and then use much faster symmetric-key operations (like AES) to generate millions of OTs.
+- **For 2-Party Computation:** It’s how the “Evaluator” in a Garbled Circuit gets the specific keys for their input wires without the “Garbler” knowing what those inputs are.
+- **Efficiency:** While the math above involves expensive modular exponentiation, modern *OT Extension* allows us to perform a few of these “base OTs” and then use much faster symmetric-key operations (like AES) to generate millions of OTs.
 
 You can think of OT as the ultimate “privacy-preserving API call”: a way to query a database where the server doesn't know what you asked for, and you only get exactly the record you paid for.
 
 ### OT Extension
 
-The transition from **Base OT** to **OT Extension** is one of the most significant breakthroughs in practical MPC. It represents a shift from "public-key" complexity to "symmetric-key" efficiency, allowing us to generate millions of OTs per second.
+The transition from **Base OT** to **OT Extension** is one of the most significant breakthroughs in practical MPC. It represents a shift from “public-key” complexity to “symmetric-key” efficiency, allowing us to generate millions of OTs per second.
 
 #### The "Why": The Bottleneck of Base OT
 
 As we saw with the Diffie-Hellman example, Base OT requires modular exponentiations or elliptic curve operations.
 
-- These are computationally "expensive" (slow).
+- These are computationally expensive and thus slow in practice.
 - In a complex circuit with millions of gates, performing a Base OT for every single wire would make the protocol unusable for real-world tech applications.
 
-**OT Extension** allows us to perform a small, fixed number of Base OTs (e.g., 128) and "extend" them into an essentially unlimited number of OTs using only fast symmetric-key operations like **XOR** and **AES-based PRGs** (Pseudo-Random Generators).
+**OT Extension** allows us to perform a small, fixed number of Base OTs (e.g., 128) and extend them into an essentially unlimited number of OTs using only fast symmetric-key operations like **XOR** and **AES-based PRGs** (Pseudo-Random Generators).
 
 #### The IKNP Protocol (The Matrix Trick)
 
-The most famous construction for this is the **IKNP protocol** (named after Ishai, Kilian, Nisim, and Petrank). The core of the protocol involves a clever mathematical "swap" of roles and a matrix transposition.
+The most famous construction for this is the **IKNP protocol** (named after Ishai, Kilian, Nisim, and Petrank). The core of the protocol involves a clever mathematical “swap” of roles and a matrix transposition.
 
 ##### Step 1: Small Base OTs
 
 Alice (the Sender) and Bob (the Receiver) start by performing $k$ Base OTs (where $k$ is a security parameter, typically 128).
 
-- **The Twist:** In these base OTs, the roles are reversed. Bob acts as the "Sender" with random seeds, and Alice acts as the "Receiver" picking which seeds she gets based on a secret bitstring $s$.
+**The Twist:** In these base OTs, the roles are reversed. Bob acts as the “Sender” with random seeds, and Alice acts as the “Receiver” picking which seeds she gets based on a secret bitstring $s$.
 
-##### Step 2: Matrix Generation and Expansion
+1. Alice generates a random secret $s \in \lbrace 0, 1 \rbrace^k$.
+2. Bob generates $k$ pairs of random seeds $(k_{1,0}, k_{1,1}), (k_{2,0}, k_{2,1}), \dots, (k_{k,0}, k_{k,1})$. 
+3. Alice receives one seed from each pair: $q_j = k_{j, s_j}$ *via* base OTs.
 
-1. Bob creates a matrix $T$ of size $m \times k$, where $m$ is the large number of OTs we actually want (e.g., $10^6$).
-2. He uses his $k$ seeds to fill this matrix using a **PRG**.
-3. Alice now has her $k$ seeds (from the Base OTs) and expands them as well.
+##### Step 2: Encoding the Choice Bits
 
-##### Step 3: The Transposition
+Now, Bob wants to receive $m$ messages, so he has a choice bitstring $r \in \{0,1\}^m$. For each index $j \in \{1, \dots, k\}$:
 
-This is the "aha!" moment for mathematicians. By transposing the matrix, the $k$ columns (each $m$ bits long) become $m$ rows (each $k$ bits long).
+1. He expands both seeds $k_{j,0}$ and $k_{j,1}$ using a PRG, hereafter called $G$, to a length of $m$ bits:
+   - $G(k_{j,0})$
+   - $G(k_{j,1})$
+2. He computes a column $u_j$ that “masks” his choice bits $r$: $u_j = G(k_{j,0}) \oplus G(k_{j,1}) \oplus r$.
+3. Bob sends all $k$ of these $u_j$ vectors to Alice.
 
-- Through the clever use of XORing Bob's expanded seeds with his desired choice bits, Alice ends up with two values for every row $i$: a value $q_i$ and a value $q_i \oplus s$.
-- Bob knows only one of these, depending on his choice bit for that specific row.
+##### Step 3: The Symmetry Trick
 
-#### The Result: Symmetric-Key Speed
+Alice now has the vectors $u_j$ from Bob and her $k$ seeds ($q_j$). She computes her own matrix columns $t_j$: $t_j = G(q_j) \oplus (s_j \cdot u_j)$.
 
-Once the matrix is set up and shared:
+If you substitute the value of $u_j$ into Alice's equation, you see the magic of the selection bit $s_j$:
 
-1. **Alice** (Sender) uses a hash function $H$ to create two keys for every $i$-th OT:
-   - $K_0 = H(i, q_i)$
-   - $K_1 = H(i, q_i \oplus s)$
-2. **Bob** (Receiver) can only compute $K_{choice} = H(i, \text{his share of row } i)$.
+- if $s_j = 0$, $t_j = G(k_{j,0})$
+- if $s_j = 1$: $t_j = G(k_{j,0}) \oplus r$
 
-Because $H$ (usually based on SHA-256 or AES) is incredibly fast, we can now process millions of these "Extended OTs" in the time it would take to do just a few dozen Base OTs.
+In either case, $t_j = G(k_{j,0}) \oplus (s_j \cdot r)$.
+
+Let us call $T$ the matrix whose columns are the vectors $t_j$ (known to Alice) and $V$ the matrix whose columns are the vectors $G(k_{j,0})$ (known to Bob). Then, for each $i$ in $\lbrace 1, 2, \dots, m \rbrace$, $T_i = V_i \oplus (r_i \cdot s)$.
+
+##### Step 4: Turning Rows into Cryptographic Keys
+
+To ensure Bob can only learn the message he chose, Alice uses a **Random Oracle** (a cryptographic hash function like SHA-256), hereafter called $H$, to turn these rows into encryption keys.
+
+For the $i$-th oblivious transfer, Alice prepares two keys:
+
+- $K_{i,0} = H(i, T_i)$
+- $K_{i,1} = H(i, T_i \oplus s)$
+
+Alice then encrypts her two messages ($m_{i,0}, m_{i,1}$) using these keys and sends them to Bob: $y_{i,0} = m_{i,0} \oplus K_{i,0}$, $y_{i,1} = m_{i,1} \oplus K_{i,1}$.  Because $H$ (usually based on SHA-256 or AES) is incredibly fast, we can now process millions of these "Extended OTs" in the time it would take to do just a few dozen Base OTs.
+
+Now consider Bob's perspective. He knows $V_i$ and his choice bit $r_i$. He computes his key as $K_{i, \text{Bob}} = H(i, V_i)$.
+
+- if $r_i = 0$: Bob's key $H(i, V_i)$ is exactly $H(i, T_i)$, which is $K_{i,0}$. He decrypts $m_{i,0}$.
+- if $r_i = 1$ Bob's key $H(i, V_i)$ is $H(i, T_i \oplus s)$, which is $K_{i,1}$. He decrypts $m_{i,1}$.
+
+Because Bob does not know Alice's secret string $s$, he cannot compute $T_i \oplus s$ if $r_i=0$, and he cannot compute $T_i$ if $r_i=1$. Therefore, he is computationally blocked from the message he didn't choose.
+
+### Summary of the Flow
+
+1. **Seeds & Base OT:** Alice gets $k$ seeds; Bob keeps all $2k$.
+2. **Expansion:** Both parties expand their seeds into large matrices.
+3. **Transposition:** They “flip” the matrices to look at rows.
+4. **Hashing:** The rows become keys for symmetric encryption (XOR).
+
+This process is effectively “recycling” the expensive public-key entropy from the Base OTs to create millions of secure channels using only fast symmetric-key operations.
 
 #### Efficiency Comparison
 
-| **Feature**        | **Base OT (e.g., DH)**  | **OT Extension (IKNP)**                  |
-| ------------------ | ----------------------- | ---------------------------------------- |
-| **Cryptography**   | Public-key (Asymmetric) | Symmetric-key (AES/SHA)                  |
-| **Throughput**     | ~Thousands per second   | ~Millions per second                     |
-| **Core Operation** | Modular Exponentiation  | XOR & PRG expansion                      |
-| **Scaling**        | Linear cost per OT      | Constant cost (Base OTs) + marginal cost |
+| **Feature**            | **Base OT (e.g., DH)**                   | **OT Extension (IKNP)**                               |
+| ---------------------- | ---------------------------------------- | ----------------------------------------------------- |
+| **Cryptography**       | Public-key (Asymmetric)                  | Symmetric-key (AES/SHA)                               |
+| **Typical Throughput** | ~Thousands per second                    | ~Millions per second                                  |
+| **Core Operation**     | Modular Exponentiation                   | XOR & PRG expansion                                   |
+| **Scaling**            | Large linear cost (in the number of OTs) | Large constant cost (Base OTs) + marginal linear cost |
 
 #### Modern Varieties: cOT and OLE
 
-In the file you shared, **Correlated OT (cOT)** was mentioned. This is a further optimization where the two messages $m_0, m_1$ are not independent but have a fixed correlation (like $m_1 = m_0 \oplus \Delta$). This is even faster and is the engine behind protocols like **SPDZ** used for privacy-preserving data analysis.
+**Correlated OT (cOT)** is a further optimization where the two messages $m_0, m_1$ are not independent but have a fixed correlation, like $m_1 = m_0 + \Delta$ for some fixed global constant $\Delta$. This is even faster and is the engine behind protocols like **SPDZ** used for privacy-preserving data analysis.
+
+**Oblivious Linear Evaluation (OLE)** is the arithmetic generalization of OT, where a sender provides a linear function $f(x) = ax + b$ and a receiver provides an input $x$, allowing the receiver to obtain the result $f(x)$ without learning the individual coefficients $a$ or $b$, and without the sender learning the input $x$. It serves as a fundamental building block for performing secure multiplications over large finite fields (arithmetic MPC) in the same way that OT serves as the foundation for Boolean circuits.
 
 ***
 
