@@ -101,68 +101,64 @@ To multiply two shared values $[a]$ and $[b]$, parties use precomputed [Beaver T
 
 ## Shamir Secret Sharing and Lagrange Interpolation
 
-In MPC, we often use **Shamir’s Secret Sharing** to distribute a secret $S$ among $n$ parties such that any $t+1$ parties can reconstruct it, but $t$ or fewer parties learn absolutely nothing.
+In MPC, we often use **Shamir’s Secret Sharing** to distribute a secret $s$ among $n$ parties such that any $t+1$ parties can reconstruct it, but $t$ or fewer parties learn absolutely nothing.
 
 ### The Setup: Encoding the Secret
 
-To share a secret $S \in \mathbb{F}$ (where $\mathbb{F}$ is a finite field):
+To share a secret $s \in \mathbb{F}$ (where $\mathbb{F}$ is a finite field):
 
 1. **Define the Degree:** We choose a threshold $t$. We want any $t+1$ people to be able to recover the secret.
 
-2. Generate the Polynomial: We construct a random polynomial $q(x)$ of degree $t$:
+2. **Generate the Polynomial:** We construct a random polynomial $q(x)$ of degree $t$:
 
    $$q(x) = a_0 + a_1x + a_2x^2 + \dots + a_tx^t$$
 
-3. **Embed the Secret:** We set the constant term $a_0 = S$. All other coefficients $(a_1, \dots, a_t)$ are chosen uniformly at random from the field.
+3. **Embed the Secret:** We set the constant term $a_0 = s$. All other coefficients $(a_1, \dots, a_t)$ are chosen uniformly at random from the field.
 
 4. **Distribute Shares:** Each party $P_i$ is assigned a unique, public evaluation point $x_i$ (usually $x_i = i$). Their private share is the value $y_i = q(x_i)$.
 
 ### The Reconstruction: Lagrange Interpolation
 
-The core "magic" is that a polynomial of degree $t$ is uniquely determined by $t+1$ distinct points. If a subset of $k = t+1$ parties pool their shares $(x_0, y_0), (x_1, y_1), \dots, (x_k, y_k)$, they can find $q(x)$ using the **Lagrange basis polynomials**.
+The core “magic” is that a polynomial of degree $t$ is uniquely determined by $t+1$ distinct points. If a subset of $t+1$ parties pool their shares $(x_1, y_1), (x_2, y_2), \dots, (x_{t+1}, y_{t+1})$, they can find $q(x)$ using the **Lagrange basis polynomials**.
 
 #### The Basis Polynomials
 
 For each share $j$ in our subset, we define a basis polynomial $\ell_j(x)$ that is equal to $1$ at $x_j$ and $0$ at all other $x_m$ in our subset:
-
-$$\ell_j(x) = \prod_{\substack{0 \le m \le k \\ m \neq j}} \frac{x - x_m}{x_j - x_m}$$
+$$
+\ell_j(x) = \prod_{\substack{1 \le m \le t+1 \\ m \neq j}} \frac{x - x_m}{x_j - x_m}
+$$
 
 #### Finding the Secret
 
 The full polynomial is the linear combination of these bases:
-
-$$q(x) = \sum_{j=0}^{k} y_j \ell_j(x)$$
-
-Since we only care about the secret $S$, which is $q(0)$, we don't even need to reconstruct the full polynomial. We just evaluate the basis polynomials at zero:
-
-$$S = q(0) = \sum_{j=0}^{k} y_j \ell_j(0)$$
+$$
+q(x) = \sum_{j=0}^{t+1} y_j \ell_j(x)
+$$
+Since we only care about the secret $s$, which is $q(0)$, we don't even need to reconstruct the full polynomial. We just evaluate the basis polynomials at zero:
+$$
+s = q(0) = \sum_{j=0}^{t+1} y_j \ell_j(0)
+$$
 
 ### Why This Works for Privacy
 
-From a physics or information theory perspective, this is essentially about **entropy**.
-
 - If you have $t+1$ points, the system of linear equations is determined; there is exactly one solution for $a_0$.
-- If you only have $t$ points, for *every possible* secret $S' \in \mathbb{F}$, there exists exactly one polynomial of degree $t$ that passes through your $t$ points and has $q(0) = S'$.
+- If you only have $t$ points, for *every possible* secret $s' \in \mathbb{F}$, there exists exactly one polynomial of degree $t$ that passes through your $t$ points and has $q(0) = s'$.
 
-Consequently, to an adversary with only $t$ shares, all possible secrets are equally likely. The "View" of the adversary provides zero information about the secret.
+Consequently, to an adversary with only $t$ shares, all possible secrets are equally likely. The “View” of the adversary provides zero information about the secret.
 
 ### Example: $t=1$ (2-out-of-$n$ sharing)
 
-Imagine we want to share a secret $S = 5$ with a threshold $t=1$ (we need 2 people to recover it).
+Imagine we want to share a secret $s = 5$ with a threshold $t=1$ (we need 2 people to recover it).
 
 1. **Polynomial:** We pick a random $a_1 = 3$. Our polynomial is $q(x) = 5 + 3x$.
 
-2. **Shares:** * Party 1 gets $(1, 8)$
+2. **Shares:**
+
+   * Party 1 gets $(1, 8)$
 
    - Party 2 gets $(2, 11)$
 
-3. Reconstruction: Using these two points to find the intercept:
-
-   $$\ell_1(0) = \frac{0 - 2}{1 - 2} = 2$$
-
-   $$\ell_2(0) = \frac{0 - 1}{2 - 1} = -1$$
-
-   $$S = (8 \cdot 2) + (11 \cdot -1) = 16 - 11 = 5$$
+3. **Reconstruction:** Using these two points to find the intercept: $\ell_1(0) = (0 - 2) / (1 - 2) = 2$, $\ell_2(0) = (0 - 1) / (2 - 1) = -1$, and $S = (8 \cdot 2) + (11 \cdot -1) = 16 - 11 = 5$.
 
 ---
 
