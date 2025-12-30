@@ -2,11 +2,11 @@
 
 ## Introduction and Formal Definition
 
-Multi-Party Computation (MPC) is a subfield of cryptography that allows a set of n parties to jointly compute a function $f(x_1, \dots, x_n)$ over their private inputs $x_1, \dots, x_n$. The fundamental goal is to provide the output of the function while ensuring that no party learns anything about the other participants' inputs beyond what is revealed by the output itself.
+**Multi-Party Computation (MPC)** is a subfield of cryptography that allows a set of $n$ parties (where $n$ is an integer larger than $1$) to jointly compute a function $f$ of $n$ variables (hereafter denoted by $x_1, x_2, \dots, x_n$) over their private inputs $x_1, x_2, \dots, x_n$. The fundamental goal is to provide the output of the function while ensuring that no party learns anything about the other participants' inputs beyond what is revealed by the output itself.
 
 Formally, an MPC protocol satisfies two primary constraints:
 
-* **Privacy:** For any party $P_i$, the information gained during the protocol (the "View") is effectively the same regardless of the other parties' specific private inputs, provided the output remains constant.
+* **Privacy:** For any party $P_i$ (for $i$ in $[\![1,n]\!]$), the information gained during the protocol (the “View”) is effectively the same regardless of the other parties' specific private inputs, provided the output remains constant.
 * **Correctness:** If the parties follow the protocol, the final output is guaranteed to be $f(x_1, \dots, x_n)$.
 
 ---
