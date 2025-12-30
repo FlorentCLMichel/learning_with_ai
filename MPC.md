@@ -9,25 +9,23 @@ Formally, an MPC protocol satisfies two primary constraints:
 * **Privacy:** For any party $P_i$ (for $i$ in $[\![1,n]\!]$), the information gained during the protocol (the “View”) is effectively the same regardless of the other parties' specific private inputs, provided the output remains constant.
 * **Correctness:** If the parties follow the protocol, the final output is guaranteed to be $f(x_1, \dots, x_n)$.
 
----
-
-## Adversary Models and Security Guarantees
+### Adversary Models and Security Guarantees
 
 The security of an MPC protocol is defined by how many corrupt parties it can withstand and the behavior of those parties.
 
-### Adversary Behavior
+#### Adversary Behavior
 
 * **Semi-Honest (Passive):** Parties follow the protocol but attempt to learn private information from the intermediate data they see.
 * **Malicious (Active):** Parties may deviate from the protocol, provide false inputs, or quit early to prevent others from getting the output.
 
-### Threshold Structures
+#### Threshold Structures
 
 Protocols are generally categorized by the **threshold** $t$ of corrupted parties they can tolerate:
 
 * **Honest Majority:** Requires $t < n/2$. These often rely on **Information-Theoretic Security**, meaning they are secure even against an adversary with infinite computing power.
 * **Dishonest Majority:** Secure even if $n-1$ parties are corrupt. These typically rely on **Computational Hardness** (e.g., the Learning With Errors (LWE) problem or Decisional Diffie-Hellman (DDH)).
 
-### A note on Correctness
+#### A note on Correctness
 
 To prevent a malicious party from corrupting the result, modern protocols use extra mathematical checks:
 
@@ -37,15 +35,13 @@ To prevent a malicious party from corrupting the result, modern protocols use ex
 
 To take the example of a running competition, MPC can't stop you from lying about your personal best (*Input Truthfulness*), but it can ensure that once the race starts, no one can take a shortcut or jump ahead a mile without being disqualified (*Protocol Correctness*).
 
----
-
-## Fundamental Building Blocks
+### Fundamental Building Blocks
 
 Hereafter, $\mathbb{F}$ denotes a field.
 
-### Shamir’s Secret Sharing (SSS)
+#### Shamir’s Secret Sharing (SSS)
 
-Used for $n$-party computation in honest-majority settings. It relies on the mathematical principle that $t+1$ points are required to uniquely define a polynomial of degree $t$.
+[Shamir's Sceret Sharing](#Shamir Secret Sharing and Lagrange Interpolation) is used for $n$-party computation in honest-majority settings. It relies on the mathematical principle that $t+1$ points are required to uniquely define a polynomial of degree $t$.
 
 To share a secret $s \in \mathbb{F}$:
 
@@ -53,11 +49,11 @@ To share a secret $s \in \mathbb{F}$:
 2. For $i \in [\![1, n]\!]$, give the party $P_i$ the share $y_i = q(i)$.
 3. Any $t+1$ parties can use **Lagrange Interpolation** to reconstruct $q(0)$.
 
-### Oblivious Transfer (OT)
+#### Oblivious Transfer (OT)
 
 [Oblivious Transfer](#Oblivious Transfer) (OT) is the “atomic unit” of MPC. In a 1-out-of-2 OT, a sender has two messages $(m_0, m_1)$, and a receiver has a bit $b \in \{0, 1\}$. The receiver gets $m_b$ without the sender knowing which they chose, and without the receiver learning the other message. Modern protocols use [OT Extension](OT Extension) to generate millions of OTs using only a few expensive public-key operations.
 
-### Garbled Circuits (Yao’s Protocol)
+#### Garbled Circuits (Yao’s Protocol)
 
 Primarily used for 2-party computation (2PC).
 
@@ -75,15 +71,13 @@ Primarily used for 2-party computation (2PC).
 4. The Evaluator decrypts the circuit gate-by-gate to find the label of the final output. 
 5. She sends it to the Garbler, who is able to retrive the corresponding value.
 
----
+### Arithmetic MPC and Multiplication
 
-## Arithmetic MPC and Multiplication
+While [addition is simple](#Addition: The “Free” Operation) in additive secret sharing (parties just add their local shares), multiplication is more complex.
 
-While addition is simple in additive secret sharing (parties just add their local shares), multiplication is more complex.
+#### Beaver Triples (Multiplication Gates)
 
-### Beaver Triples (Multiplication Gates)
-
-To multiply two shared values $[a]$ and $[b]$, parties use precomputed **Beaver Triples** $([u], [v], [w])$ where $w = uv$.
+To multiply two shared values $[a]$ and $[b]$, parties use precomputed [Beaver Triples](#Multiplication: The Challenge) $([u], [v], [w])$ where $w = uv$.
 
 1. Parties compute $[d] = [a] - [u]$ and $[e] = [b] - [v]$.
 
@@ -94,15 +88,13 @@ To multiply two shared values $[a]$ and $[b]$, parties use precomputed **Beaver 
    [ab] = [w] + e[u] + d[v] + de
    $$
 
----
-
-## Modern Frontiers and Optimization
+### Modern Frontiers and Optimization
 
 | Technique | Description |
 | --- | --- |
-| **SPDZ** | A protocol for dishonest majority using a "preprocessing" phase to generate authenticated Beaver triples. |
+| **SPDZ** | A protocol for dishonest majority using a preprocessing phase to generate authenticated Beaver triples. |
 | **FHE Integration** | Using Fully Homomorphic Encryption to offload heavy computation in MPC, reducing communication rounds. |
-| **UC Security** | "Universally Composable" security, ensuring a protocol remains secure even when run alongside other instances of itself. |
+| **UC Security** | “Universally Composable” security, ensuring a protocol remains secure even when run alongside other instances of itself. |
 | **MPC-in-the-Head** | A technique to build Zero-Knowledge Proofs (ZKPs) by simulating an MPC protocol internally. |
 
 ---
@@ -178,7 +170,7 @@ Imagine we want to share a secret $S = 5$ with a threshold $t=1$ (we need 2 peop
 
 In MPC, the ability to perform calculations on encrypted or shared data is what makes the technology powerful. Since you have a strong background in mathematics, you’ll find that the "linearity" of Shamir’s Secret Sharing (SSS) makes addition trivial, while multiplication requires a clever change in perspective.
 
-### Addition: The "Free" Operation
+### Addition: The “Free” Operation
 
 Addition in Shamir’s Secret Sharing is **locally computable**. This means parties can add their shares together without sending any messages to each other.
 
