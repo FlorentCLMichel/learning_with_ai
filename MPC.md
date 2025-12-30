@@ -61,10 +61,19 @@ To share a secret $s \in \mathbb{F}$:
 
 Primarily used for 2-party computation (2PC).
 
-1. The function $f$ is represented as a Boolean circuit of AND and XOR gates.
-2. The "Garbler" encrypts the truth table of each gate using random cryptographic keys (labels) for each wire.
-3. The "Evaluator" receives the garbled tables and, through OT, the labels corresponding to their input.
-4. The Evaluator decrypts the circuit gate-by-gate to find the final output.
+1. The function $f$ (known to both parties) is represented as a Boolean circuit of AND and XOR gates.
+2. The *Garbler* encrypts the truth table of each gate using random labels for the two possible values $0$ and $1$, chosen independently for each wire of the circuit:
+   1. The Garbler chooses labels for the values $0$ and $1$ for each wire.
+   2. For each column of each gate, (two input columns and one output column), each value ($0$ or $1$) is replaced by its label.
+   3. The output entries of each table are encrypted with a key dependent on the two input labels.
+   4. The output values of each table are shuffled.
+
+3. The *Evaluator* receives 
+   * the garbled tables,
+   * the encrypted inputs from the Garbler,
+   * through OT, the labels corresponding to their input.
+4. The Evaluator decrypts the circuit gate-by-gate to find the label of the final output. 
+5. She sends it to the Garbler, who is able to retrive the corresponding value.
 
 ---
 
