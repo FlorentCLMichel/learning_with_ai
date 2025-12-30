@@ -79,17 +79,17 @@ Primarily used for 2-party computation (2PC).
 
 ## Arithmetic MPC and Multiplication
 
-While addition is "free" in additive secret sharing (parties just add their local shares), multiplication is complex.
+While addition is simple in additive secret sharing (parties just add their local shares), multiplication is more complex.
 
 ### Beaver Triples (Multiplication Gates)
 
-To multiply two shared values $[a]$ and $[b]$, parties use precomputed "Beaver Triples" $([u], [v], [w])$ where $w = uv$.
+To multiply two shared values $[a]$ and $[b]$, parties use precomputed **Beaver Triples** $([u], [v], [w])$ where $w = uv$.
 
 1. Parties compute $[d] = [a] - [u]$ and $[e] = [b] - [v]$.
 
-2. Parties "open" (reveal) $d$ and $e$.
+2. Parties *open* (reveal) $d$ and $e$.
 
-3. The share of the product [ab] is computed locally as:
+3. The shares of the product $[ab]$ are computed locally as:
    $$
    [ab] = [w] + e[u] + d[v] + de
    $$
