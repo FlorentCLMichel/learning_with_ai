@@ -109,11 +109,11 @@ To share a secret $s \in \mathbb{F}$ (where $\mathbb{F}$ is a finite field):
 
 1. **Define the Degree:** We choose a threshold $t$. We want any $t+1$ people to be able to recover the secret.
 
-2. **Generate the Polynomial:** We construct a random polynomial $q(x)$ of degree $t$:
+2. **Generate the Polynomial:** We construct a random polynomial $q(x)$ of degree at most $t$:
 
    $$q(x) = a_0 + a_1x + a_2x^2 + \dots + a_tx^t$$
 
-3. **Embed the Secret:** We set the constant term $a_0 = s$. All other coefficients $(a_1, \dots, a_t)$ are chosen uniformly at random from the field.
+3. **Embed the Secret:** We set the constant term $a_0 = s$. All other coefficients $(a_1, \dots, a_t)$ are chosen uniformly at random from the field. (The polynomial $q$ has degree $t$ with probability $1 - 1 / \lvert F \rvert$.)
 
 4. **Distribute Shares:** Each party $P_i$ is assigned a unique, public evaluation point $x_i$ (usually $x_i = i$). Their private share is the value $y_i = q(x_i)$.
 
@@ -164,7 +164,7 @@ Imagine we want to share a secret $s = 5$ with a threshold $t=1$ (we need 2 peop
 
 ## Operations on shares
 
-In MPC, the ability to perform calculations on encrypted or shared data is what makes the technology powerful. Since you have a strong background in mathematics, you’ll find that the "linearity" of Shamir’s Secret Sharing (SSS) makes addition trivial, while multiplication requires a clever change in perspective.
+In MPC, the ability to perform calculations on encrypted or shared data is what makes the technology powerful. The linearity of Shamir’s Secret Sharing (SSS) makes addition trivial, while multiplication requires a change in perspective.
 
 ### Addition: The “Free” Operation
 
@@ -174,52 +174,49 @@ Suppose we have two secrets, $A$ and $B$, shared using polynomials $q_A(x)$ and 
 
 - Party $P_i$ holds shares $y_{A,i} = q_A(i)$ and $y_{B,i} = q_B(i)$.
 
-- To compute the shares of the sum $S = A + B$, the parties simply add their local shares:
+- To compute the shares of the sum $S = A + B$, the parties simply add their local shares: $y_{S,i} = y_{A,i} + y_{B,i}$.
 
-  $$y_{S,i} = y_{A,i} + y_{B,i}$$
 
-Why this works:
+**Why this works:**
 
-Because of the linearity of polynomials, the sum of two polynomials of degree $t$ is itself a polynomial of degree $t$:
-
-$$Q(x) = q_A(x) + q_B(x)$$
-
-The constant term of $Q(x)$ is $q_A(0) + q_B(0)$, which is exactly $A + B$. Since the degree remains $t$, the privacy threshold is preserved.
+Because of the linearity of polynomials, the sum of two polynomials of degree at most $t$ is itself a polynomial of degree at most $t$: the polynomial $q(x)$ defined by
+$$
+q(x) = q_A(x) + q_B(x)
+$$
+has degree at most $t$ with its $t$ non-constant coefficients (statistically) uniformly sampled from $\mathbb{F}$, so the privacy threshold is preserved. The constant term of $q(x)$ is $q_A(0) + q_B(0)$, which is exactly $A + B$. 
 
 ### Multiplication: The Challenge
 
 Multiplication is significantly harder for two main reasons:
 
 1. **Degree Doubling:** If you multiply two polynomials of degree $t$, the resulting polynomial has degree $2t$. To reconstruct a degree $2t$ polynomial, you would need $2t+1$ parties, which might exceed your available honest majority.
-2. **Randomness Loss:** The product of two random polynomials is no longer a "random" polynomial (its coefficients are correlated), which can leak information.
+2. **Randomness Loss:** The product of two random polynomials is no longer as “random” (its coefficients are correlated), which can leak information.
 
 #### The Solution: Beaver Triples
 
-To solve this, modern MPC protocols (like **SPDZ**) use a technique called **Beaver Triples**, which shifts the heavy lifting to a "preprocessing" phase.
+To solve this, modern MPC protocols (like **SPDZ**) use a technique called **Beaver Triples**, which shifts the heavy lifting to a “preprocessing” phase. 
+
+In the following, for an element $x$ of $\mathbb{F}$, $[x]$ denotes shares of $x$.
 
 ##### The Preprocessing Phase
 
-Before the parties know their actual inputs $A$ and $B$, they (or a trusted setup) generate a set of random "triples" $([u], [v], [w])$ such that $w = u \cdot v$. These values are secret-shared among the parties and have no relation to the actual data.
+Before the parties know their actual inputs $A$ and $B$, they (or a trusted setup) generate a set of random “triples” $([u], [v], [w])$ such that $u$ and $v$ are sampled uniformly and independently from $\mathbb{F}$, and $w = u \cdot v$. These values are secret-shared among the parties and have no relation to the actual data.
 
 ##### The Online Phase
 
 When it is time to multiply the real shares $[a]$ and $[b]$:
 
-1. **Mask the inputs:** Parties compute and "open" (reconstruct) two values:
+1. **Mask the inputs:** Parties compute and *open* (reconstruct) two values:
 
    - $d = a - u$
-
    - $e = b - v$
 
-     Because $u$ and $v$ are random and secret, $d$ and $e$ reveal nothing about $a$ or $b$.
+   Because $u$ and $v$ are secret and uniformaly sampled from $\mathbb{F}$, $d$ and $e$ reveal nothing about $a$ or $b$.
 
-2. Compute the product share: Every party can now compute their share of the product $[ab]$ using only the public constants $d, e$ and their shares of the triple:
+2. Compute the product share: Every party can now compute their share of the product $[ab]$ using only the public constants $d, e$ and their shares of the triple: $[ab] = [w] + e[u] + d[v] + de$.
 
-   
 
-   $$[ab] = [w] + e[u] + d[v] + de$$
-
-The Algebra behind it:
+##### The Algebra behind it:
 
 Mathematically, we are just expanding the identity:
 
@@ -232,9 +229,7 @@ Since $uv = w$, this simplifies to the formula above. Every term is either a pub
 | **Operation**      | **Communication Cost**           | **Mathematical Tool**          |
 | ------------------ | -------------------------------- | ------------------------------ |
 | **Addition**       | Zero (Local)                     | Linearity of Polynomials       |
-| **Multiplication** | High (Requires "Opening" $d, e$) | Beaver Triples / Preprocessing |
-
-In a way, this is similar to **Perturbation Theory** in physics: we take a difficult non-linear problem (multiplication) and use a known reference state (the Beaver Triple) to linearize the calculation.
+| **Multiplication** | High (Requires “opening” $d, e$) | Beaver Triples / Preprocessing |
 
 ***
 
