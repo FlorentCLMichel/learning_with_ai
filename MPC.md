@@ -22,14 +22,26 @@ The security of an MPC protocol is defined by how many corrupt parties it can wi
 
 ### Threshold Structures
 
-Protocols are generally categorized by the "threshold" t of corrupted parties they can tolerate:
+Protocols are generally categorized by the **threshold** $t$ of corrupted parties they can tolerate:
 
 * **Honest Majority:** Requires $t < n/2$. These often rely on **Information-Theoretic Security**, meaning they are secure even against an adversary with infinite computing power.
 * **Dishonest Majority:** Secure even if $n-1$ parties are corrupt. These typically rely on **Computational Hardness** (e.g., the Learning With Errors (LWE) problem or Decisional Diffie-Hellman (DDH)).
 
+### A note on Correctness
+
+To prevent a malicious party from corrupting the result, modern protocols use extra mathematical checks:
+
+- **Information-Theoretic MACs:** In protocols like **SPDZ**, every secret share is “tagged” with a Message Authentication Code (MAC). If a party tries to change their share during a calculation, the MAC check will fail at the end, and the result will be discarded.
+- **Zero-Knowledge Proofs (ZKPs):** A party can be required to provide a proof that says: *“I am not showing you my share, but here is a proof that this share was calculated correctly according to the protocol rules.”*
+- **Error-Correcting Codes:** In honest-majority settings using Shamir's Secret Sharing, if a party provides an incorrect point, it becomes an “outlier”. If you have enough extra points, you can use **Reed-Solomon decoding** to identify and ignore the “noisy” (malicious) data point and still find the correct polynomial.
+
+To take the example of a running competition, MPC can't stop you from lying about your personal best (*Input Truthfulness*), but it can ensure that once the race starts, no one can take a shortcut or jump ahead a mile without being disqualified (*Protocol Correctness*).
+
 ---
 
 ## Fundamental Building Blocks
+
+Hereafter, $\mathbb{F}$ denotes a field.
 
 ### Shamir’s Secret Sharing (SSS)
 
@@ -38,9 +50,7 @@ Used for $n$-party computation in honest-majority settings. It relies on the mat
 To share a secret $s \in \mathbb{F}$:
 
 1. Pick a random polynomial $q(x)$ of degree $t$ such that $q(0) = s$.
-
-
-2. Give each party $P_i$ the share $y_i = q(i)$.
+2. For $i \in [\![1, n]\!]$, give the party $P_i$ the share $y_i = q(i)$.
 3. Any $t+1$ parties can use **Lagrange Interpolation** to reconstruct $q(0)$.
 
 ### Oblivious Transfer (OT)
