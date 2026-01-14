@@ -20,10 +20,7 @@ This document provides a brief overview of fundamental data structures and algor
 ### **Space Complexity**
 
 - **Description:** Space complexity measures the amount of memory an algorithm uses as a function of the input size. It is also expressed using Big-O notation.
-- **Common Notations:**
-  - **$O(1)$:** Constant space. The algorithm uses a fixed amount of memory regardless of input size.
-  - **$O(n)$:** Linear space. The memory usage increases linearly with the input size.
-  - **$O(n^2)$:** Quadratic space. The memory usage increases quadratically with the input size.
+- **Common Notations:** Similar to the above, replacing ‘time’ with ‘space’.
 
 ### **Why Complexity Matters**
 
