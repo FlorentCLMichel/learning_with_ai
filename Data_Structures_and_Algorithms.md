@@ -1,4 +1,35 @@
+# Data Structures and Algorithms: A Technical Primer
+
 This document provides a brief overview of fundamental data structures and algorithms.
+
+------
+
+## Understanding Complexity
+
+### **Time Complexity**
+
+- **Description:** Time complexity measures the amount of time an algorithm takes to complete as a function of the size of the input. It is expressed using Big-O notation, which describes the upper bound of the growth rate.
+- **Common Notations:**
+  - **$O(1)$:** Constant time. The algorithm takes the same amount of time regardless of input size.
+  - **$O(\log n)$:** Logarithmic time. The time increases logarithmically with the input size.
+  - **$O(n)$:** Linear time. The time increases linearly with the input size.
+  - **$O(n \log n)$:** Linearithmic time. Common in efficient sorting algorithms like Merge Sort.
+  - **$O(n^2)$:** Quadratic time. The time increases quadratically with the input size, often seen in nested loops.
+  - **$O(2^n)$:** Exponential time. The time doubles with each additional input element, typical in recursive algorithms without optimization.
+
+### **Space Complexity**
+
+- **Description:** Space complexity measures the amount of memory an algorithm uses as a function of the input size. It is also expressed using Big-O notation.
+- **Common Notations:**
+  - **$O(1)$:** Constant space. The algorithm uses a fixed amount of memory regardless of input size.
+  - **$O(n)$:** Linear space. The memory usage increases linearly with the input size.
+  - **$O(n^2)$:** Quadratic space. The memory usage increases quadratically with the input size.
+
+### **Why Complexity Matters**
+
+- **Efficiency:** Understanding complexity helps in choosing the right data structure or algorithm for a given problem, ensuring optimal performance.
+- **Scalability:** Algorithms with lower time complexity scale better with large input sizes, making them suitable for big data applications.
+- **Resource Management:** Space complexity is crucial for memory-constrained environments, such as embedded systems or mobile devices.
 
 ------
 
@@ -30,7 +61,7 @@ This document provides a brief overview of fundamental data structures and algor
   - **Peek:** $O(1)$ — Returns the highest priority element without removing it.
   - **Ordering:** Unlike a standard FIFO (First-In-First-Out) queue, the internal order depends entirely on the priority logic (e.g., a Min-Priority Queue vs. a Max-Priority Queue).
 - **Use-cases:**
-  - **Dijkstra’s Algorithm:** Used to constantly pick the next node with the shortest tentative distance.
+  - **Dijkstra's Algorithm:** Used to constantly pick the next node with the shortest tentative distance.
   - **Operating System Scheduling:** Managing processes where some tasks (like UI interrupts) have higher priority than background tasks.
   - **Bandwidth Management:** Prioritizing real-time data packets (like VoIP or video) over standard web traffic in routers.
   - **Huffman Coding:** Used in data compression algorithms to build the optimal prefix tree.
@@ -66,7 +97,7 @@ This document provides a brief overview of fundamental data structures and algor
 
 ## Common Algorithms
 
-### **Dijkstra’s Algorithm**
+### **Dijkstra's Algorithm**
 
 - **What it is for:** Finding the shortest path from a single source node to all other nodes in a weighted graph with non-negative edge weights.
 - **Description:** It maintains a set of visited nodes and a set of unvisited nodes. It repeatedly picks the unvisited node with the smallest tentative distance, updates the distances of its neighbors, and marks it as visited.
