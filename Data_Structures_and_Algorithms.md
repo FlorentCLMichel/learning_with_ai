@@ -6,6 +6,49 @@ This document provides a brief overview of fundamental data structures and algor
 
 ## Understanding Complexity
 
+### **Mathematical Definitions of Asymptotic Notations**
+
+#### **Big-O Notation (O)**
+The Big-O notation describes the **upper bound** of the growth rate of a function. Formally, given a real-valued functions $f$ and a real-valued non-negative function $g$ of one real (or integer) variable, we say $f(x) \mathop{=}_{x \to \infty} O(g(x))$ if
+$$
+\exists c > 0 \quad \exists x_0 \in \mathbb{R} \quad \forall x \geq x_0 \quad \left\lvert f(x) \right\rvert \leq c \, g(x) .
+$$
+This notation is widely used in computer science to analyze the worst-case complexity of algorithms. Typically, $f$ will be a non-negative function describing the runtime, memory use, or power draw of running an algorithm.
+
+#### **Little-o Notation (o)**
+The little-o notation describes a **strictly tighter upper bound** that is not asymptotically tight. Formally, with the same notations as above, $f(x) \mathop{=}_{x \to \infty} o(g(x))$ if
+$$
+\forall c > 0 \quad \exists x_0 \in \mathbb{R} \quad \forall x \geq x_0 \quad \left\lvert f(x) \right\rvert \leq c \, g(x) .
+$$
+Notice that the only (but important) difference is the quantifier of $c$.
+
+While less commonly used in practice, it is useful for more precise theoretical analysis.
+
+#### **Theta Notation (Θ)**
+The Theta notation provides a **tight bound** for the growth rate of a function. Formally, assuming that $f$ is non-negative, $f(x)  \mathop{=}_{x \to \infty} \Theta(g(x))$ if
+$$
+\exists c_1 > 0 \quad \exists c_2 > 0 \quad \exists x_0 \in \mathbb{R} \quad \forall x \geq x_0 \quad c_1 \, g(x) \leq f(x) \leq c_2 \, g(x) .
+$$
+This notation is useful for describing both the upper and lower bounds of an algorithm's complexity.
+
+#### Notes on notations
+
+When there is no reasonable ground for confusion, we may omit the index $x \to \infty$.
+
+It is common to replace the functions $f$ and/or $g$ by their expressions in terms if their variable, usually denoted by $x$ if it takes continuous values or $n$ if it takes discrete values. 
+
+#### **Polynomial Complexity**
+
+An algorithm has **polynomial complexity** if its time complexity is $O(n^k)$ for some constant, positive $k$. Examples include:
+- Linear time: $O(n)$
+- Quadratic time: $O(n^2)$
+- Cubic time: $O(n^3)$
+
+Polynomial-time algorithms are generally considered efficient and scalable for large inputs.
+
+#### **Exponential Complexity**
+An algorithm has **exponential complexity** if its time complexity is $O(2^{n})$ or $O(k^n)$ for some constant $k > 1$. These algorithms become impractical for large inputs due to their rapid growth.
+
 ### **Time Complexity**
 
 - **Description:** Time complexity measures the amount of time an algorithm takes to complete as a function of the size of the input. It is expressed using Big-O notation, which describes the upper bound of the growth rate.
