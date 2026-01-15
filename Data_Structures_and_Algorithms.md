@@ -44,9 +44,11 @@ When there is no reasonable ground for confusion, we may omit the index $x \to \
 
 It is common to replace the functions $f$ and/or $g$ by their expressions in terms if their variable, usually denoted by $x$ if it takes continuous values or $n$ if it takes discrete values. 
 
-#### Logarithmcic complexity
+#### Logarithmic complexity
 
-***
+An algorithm has **logarithmic complexity** if its time complexity is $O(\log n)$. 
+
+Logarithmic-time algorithms are generally considered very efficient and scalable for large inputs.
 
 #### Polynomial Complexity
 
@@ -55,9 +57,10 @@ An algorithm has **polynomial complexity** if its time complexity is $O(n^k)$ fo
 - Quadratic time: $O(n^2)$
 - Cubic time: $O(n^3)$
 
-Polynomial-time algorithms are generally considered efficient and scalable for large inputs. However, how efficient they are in practice critically depends on the exponent.
+Polynomial-time algorithms are generally considered relatively efficient and scalable for large inputs. However, how efficient they are in practice critically depends on the exponent.
 
 #### Exponential Complexity
+
 An algorithm has **exponential complexity** if its time complexity is $O(2^{n})$ or $O(k^n)$ for some constant $k > 1$. These algorithms quickly become impractical for large inputs due to their rapid growth.
 
 ### Time Complexity
