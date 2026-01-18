@@ -1,6 +1,6 @@
 # Data Structures and Algorithms: A Technical Primer
 
-This document provides a brief overview of fundamental data structures and algorithms.
+This document provides a brief overview of fundamental data structures and algorithms, including their properties, use cases, and trade-offs.
 
 ------
 
@@ -99,6 +99,59 @@ Sometimes, optimizing for time complexity (e.g., using a hash table) may increas
   - **Space Complexity:** $O(n)$.
   - **Collisions:** Handled via **Chaining** (linked lists in each bucket) or **Open Addressing** (finding the next empty slot).
 - **Use-cases:** Database indexing, caching (LRU caches), unique element counting, and implementing Sets.
+- **Example:**
+  ```python
+  cache = {}
+  def get(key):
+      return cache.get(key, None)
+  def put(key, value):
+      cache[key] = value
+  ```
+
+### Trie (Prefix Tree)
+
+- **Description:** A tree-like data structure used for storing strings, where each node represents a character. It is efficient for prefix-based searches.
+- **Main Properties:**
+  - **Time Complexity:**
+    - Insertion: $O(L)$, where $L$ is the length of the word.
+    - Search: $O(L)$.
+    - Prefix Search: $O(L)$.
+- **Use-cases:** Autocomplete systems, spell checkers, and IP routing tables.
+- **Example:**
+  ```python
+  trie = {}
+  def insert(word):
+      node = trie
+      for char in word:
+          if char not in node:
+              node[char] = {}
+          node = node[char]
+      node["*"] = True
+  ```
+
+### Disjoint Set Union (DSU) or Union-Find
+
+- **Description:** A data structure that tracks a partition of a set into disjoint subsets. It supports two operations: `find` (determine which subset an element is in) and `union` (merge two subsets).
+- **Main Properties:**
+  - **Time Complexity:** With path compression and union by rank: $O(\alpha(n))$, where $\alpha$ is the inverse Ackermann function (effectively constant time).
+- **Use-cases:** Kruskal's algorithm for Minimum Spanning Tree (MST), network connectivity, and cycle detection in undirected graphs.
+
+### Bloom Filter
+
+- **Description:** A probabilistic data structure used to test whether an element is a member of a set. It may return false positives but never false negatives.
+- **Main Properties:**
+  - **Space Complexity:** $O(m)$, where $m$ is the size of the bit array.
+- **Use-cases:** Spell checkers, caching systems, and network routers.
+
+### Segment Tree
+
+- **Description:** A binary tree used for storing intervals or segments. It allows for efficient range queries and updates.
+- **Main Properties:**
+  - **Time Complexity:**
+    - Construction: $O(n)$.
+    - Query: $O(\log n)$.
+    - Update: $O(\log n)$.
+- **Use-cases:** Range minimum/maximum queries, range sum queries, and interval scheduling.
 
 ### Binary Search Tree (BST) & Balanced Trees (AVL, Red-Black)
 
@@ -138,16 +191,27 @@ Sometimes, optimizing for time complexity (e.g., using a hash table) may increas
   - **Adjacency List:** $O(V + E)$ space. Better for sparse graphs. Fast to iterate over neighbors.
   - **Adjacency Matrix:** $O(V^2)$ space. Better for dense graphs. $O(1)$ to check if an edge exists between two specific nodes.
 - **Use-cases:** Social networks, recommendation engines, pathfinding in maps, and dependency resolution in build systems.
+- **Example:**
+  ```python
+  graph = {
+      "Alice": ["Bob", "Charlie"],
+      "Bob": ["Alice", "David"],
+      "Charlie": ["Alice"],
+      "David": ["Bob"]
+  }
+  ```
 
 ### Quick Reference: Time Complexity Table
 
-| **Data Structure**        | **Access**  | **Search**  | **Insertion** | **Deletion** |
-| ------------------------- | ----------- | ----------- | ------------- | ------------ |
-| **Array**                 | $O(1)$      | $O(n)$      | $O(n)$        | $O(n)$       |
-| **Hash Table**            | N/A         | $O(1)$      | $O(1)$        | $O(1)$       |
-| **Priority Queue (Heap)** | $O(1)$      | $O(n)$      | $O(\log n)$   | $O(\log n)$  |
-| **BST (Balanced)**        | $O(\log n)$ | $O(\log n)$ | $O(\log n)$   | $O(\log n)$  |
-| **Singly Linked List**    | $O(n)$      | $O(n)$      | $O(1)$        | $O(1)$       |
+| **Data Structure**        | **Access**  | **Search**  | **Insertion** | **Deletion** | **Notes**                          |
+| ------------------------- | ----------- | ----------- | ------------- | ------------ | ---------------------------------- |
+| **Array**                 | $O(1)$      | $O(n)$      | $O(n)$        | $O(n)$       | Fixed size, contiguous memory.     |
+| **Hash Table**            | N/A         | $O(1)$      | $O(1)$        | $O(1)$       | Average case; worst case $O(n)$. |
+| **Priority Queue (Heap)** | $O(1)$      | $O(n)$      | $O(\log n)$   | $O(\log n)$  | Min/Max access in $O(1)$.        |
+| **BST (Balanced)**        | $O(\log n)$ | $O(\log n)$ | $O(\log n)$   | $O(\log n)$  | Requires balancing (AVL, Red-Black). |
+| **Singly Linked List**    | $O(n)$      | $O(n)$      | $O(1)$        | $O(1)$       | Dynamic size, non-contiguous.      |
+| **Trie**                  | N/A         | $O(L)$      | $O(L)$        | $O(L)$       | $L$ is the length of the word.   |
+| **Bloom Filter**          | N/A         | $O(1)$      | $O(1)$        | N/A          | Probabilistic, false positives.    |
 
 ------
 
@@ -155,46 +219,110 @@ Sometimes, optimizing for time complexity (e.g., using a hash table) may increas
 
 ### Dijkstra's Algorithm
 
-- **What it is for:** Finding the shortest path from a single source node to all other nodes in a weighted graph with non-negative edge weights.
-- **Description:** It maintains a set of visited nodes and a set of unvisited nodes. It repeatedly picks the unvisited node with the smallest tentative distance, updates the distances of its neighbors, and marks it as visited.
-- **Complexity Analysis:**
-  - **Runtime:** $O((V + E) \log V)$ when using a Fibonacci heap or a standard Binary Priority Queue.
-  - **Memory:** $O(V + E)$ to store the graph and distances.
-- **Variations:**
-  - **A\* Search:** Uses heuristics to speed up the search (common in AI/Games).
-  - **Bellman-Ford:** Can handle negative edge weights ($O(VE)$).
-- **Use-cases:** GPS navigation, network routing protocols (OSPF).
+- **Description:** A greedy algorithm for finding the shortest paths from a single source node to all other nodes in a graph with non-negative edge weights.
+- **Use-cases:** GPS navigation systems, network routing protocols, and finding the shortest path in a maze.
+- **Time Complexity:** $O((V + E) \log V)$, where $V$ is the number of vertices and $E$ is the number of edges.
+- **Example:**
+  ```python
+  import heapq
+  def dijkstra(graph, start):
+      distances = {node: float('infinity') for node in graph}
+      distances[start] = 0
+      priority_queue = [(0, start)]
+      while priority_queue:
+          current_distance, current_node = heapq.heappop(priority_queue)
+          for neighbor, weight in graph[current_node].items():
+              distance = current_distance + weight
+              if distance < distances[neighbor]:
+                  distances[neighbor] = distance
+                  heapq.heappush(priority_queue, (distance, neighbor))
+      return distances
+  ```
 
-### Binary Search
+### Kruskal's Algorithm
 
-- **What it is for:** Finding the position of a target value within a **sorted** array.
-- **Description:** It compares the target value to the middle element of the array. If they are not equal, the half in which the target cannot lie is eliminated, and the search continues on the remaining half.
-- **Complexity Analysis:**
-  - **Runtime:** $O(\log n)$.
-  - **Memory:** $O(1)$ for iterative implementation; $O(\log n)$ for recursive due to stack depth.
-- **Use-cases:** Searching in databases, finding roots of functions (Numerical Analysis), and debugging (Git Bisect).
+- **Description:** A greedy algorithm for finding the Minimum Spanning Tree (MST) of a graph. It uses the Union-Find data structure to efficiently manage and merge sets of nodes.
+- **Use-cases:** Network design, clustering, and circuit design.
+- **Time Complexity:** $O(E \log E)$ or $O(E \log V)$, where $E$ is the number of edges and $V$ is the number of vertices.
 
-### Merge Sort
+### Floyd-Warshall Algorithm
 
-- **What it is for:** A stable, comparison-based sorting algorithm.
-- **Description:** A **Divide and Conquer** algorithm. It divides the array into two halves, recursively sorts them, and then merges the two sorted halves back together.
-- **Complexity Analysis:**
-  - **Runtime:** $O(n \log n)$ in all cases (best, average, worst).
-  - **Memory:** $O(n)$ auxiliary space for the merging process.
-- **Variations:** **Timsort** (used in Python/Java), which optimizes Merge Sort for real-world data that often contains pre-sorted runs.
-- **Use-cases:** Sorting linked lists (where $O(1)$ extra space is possible), external sorting (sorting data too large for RAM).
+- **Description:** An algorithm for finding the shortest paths between all pairs of vertices in a weighted graph. It works for both directed and undirected graphs and can handle negative weights (but not negative cycles).
+- **Use-cases:** Route planning, social network analysis, and detecting arbitrage in currency markets.
+- **Time Complexity:** $O(V^3)$, where $V$ is the number of vertices.
 
-### Breadth-First Search (BFS) & Depth-First Search (DFS)
+### Topological Sorting (Kahn's Algorithm or DFS-based)
 
-- **What it is for:** Traversing or searching tree or graph data structures.
-- **Description:**
-  - **BFS:** Explores neighbors level-by-level using a **Queue**.
-  - **DFS:** Explores as far as possible along each branch before backtracking using a **Stack** (or recursion).
-- **Complexity Analysis:**
-  - **Runtime:** $O(V + E)$.
-  - **Memory:** $O(V)$. BFS memory is proportional to the "width" of the graph; DFS to the "depth."
-- **Use-cases:**
-  - **BFS:** Finding the shortest path in an unweighted graph, peer-to-peer networks.
-  - **DFS:** Topological sorting (build systems), solving puzzles (mazes), cycle detection in graphs.
+- **Description:** An algorithm for linearly ordering the vertices of a directed acyclic graph (DAG) such that for every directed edge $u \rightarrow v$, vertex $u$ comes before $v$ in the ordering.
+- **Use-cases:** Task scheduling, dependency resolution, and build systems.
+- **Time Complexity:** $O(V + E)$, where $V$ is the number of vertices and $E$ is the number of edges.
+
+### Knapsack Problem (Dynamic Programming)
+
+- **Description:** A classic optimization problem where the goal is to maximize the value of items in a knapsack without exceeding its weight capacity. It is solved using dynamic programming.
+- **Use-cases:** Resource allocation, budget optimization, and financial portfolio selection.
+- **Time Complexity:** $O(nW)$, where $n$ is the number of items and $W$ is the maximum weight capacity.
 
 ------
+
+## Trade-offs and Practical Tips
+
+### Time vs. Space Complexity
+
+- **Hash Tables:** Offer $O(1)$ access but use more memory.
+- **Graphs:** Adjacency lists are space-efficient for sparse graphs, while adjacency matrices are faster for edge lookups in dense graphs.
+
+### Choosing the Right Data Structure
+
+- Use a **hash table** for fast lookups and insertions.
+- Use a **BST** for ordered data and efficient search, insertion, and deletion.
+- Use a **priority queue** for tasks that require constant access to the highest or lowest priority element.
+
+### Practical Tips
+
+- **Hash Tables:** Use a good hash function to minimize collisions.
+- **Graphs:** Use adjacency lists for sparse graphs and adjacency matrices for dense graphs.
+- **Sorting:** Use quicksort for average-case performance and mergesort for stable sorting.
+
+------
+
+## Further Reading
+
+- **Books:**
+  - [*Introduction to Algorithms*](https://mitpress.mit.edu/9780262533058/introduction-to-algorithms/) by Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest and Clifford Stein.
+  - [*Algorithms*](https://algs4.cs.princeton.edu/home/) by Robert Sedgewick and Kevin Wayne.
+- **Online Resources:**
+  - [GeeksforGeeks](https://www.geeksforgeeks.org)
+  - [LeetCode](https://leetcode.com)
+
+------
+
+## Visualizations
+
+### Binary Tree Example
+
+```
+      A
+     / \
+    B   C
+   / \   \
+  D   E   F
+```
+
+This is a simple binary tree with root node `A`.
+
+### Graph Example
+
+```
+  Alice -- Bob
+   |      /  \
+  Charlie   David
+```
+
+This is a simple undirected graph representing connections between people.
+
+------
+
+## Conclusion
+
+This primer covers the fundamental data structures and algorithms that are essential for efficient problem-solving in computer science. Understanding these concepts will help you design scalable and optimized solutions for a wide range of problems. For further exploration, refer to the recommended books and online resources.
