@@ -9,7 +9,7 @@ This document provides a brief overview of fundamental data structures and algor
 ### Mathematical Definitions of Asymptotic Notations
 
 #### Big-O Notation (O)
-The Big-O notation describes the **upper bound** of the growth rate of a function. Formally, given a real-valued functions $f$ and a real-valued non-negative function $g$ of one real (or integer) variable, we say $f(x) \mathop{=}_{x \to \infty} O(g(x))$ if
+The Big-O notation describes the **upper bound** of the growth rate of a function. Formally, given a real-valued function $f$ and a real-valued non-negative function $g$ of one real (or integer) variable, we say $f(x) \mathop{=}_{x \to \infty} O(g(x))$ if
 $$
 \exists c > 0 \quad \exists x_0 \in \mathbb{R} \quad \forall x \geq x_0 \quad \left\lvert f(x) \right\rvert \leq c \, g(x) .
 $$
@@ -38,13 +38,13 @@ For example, if $f(n) = 3n^2 + 2n + 1$, then $f(n) \mathop{=}_{n \to \infty} \Th
 
 This notation is useful for describing both the upper and lower bounds of an algorithm's complexity.
 
-#### Notes on notations
+#### Notes on Notations
 
 When there is no reasonable ground for confusion, we may omit the index $x \to \infty$.
 
-It is common to replace the functions $f$ and/or $g$ by their expressions in terms if their variable, usually denoted by $x$ if it takes continuous values or $n$ if it takes discrete values. 
+It is common to replace the functions $f$ and/or $g$ by their expressions in terms of their variable, usually denoted by $x$ if it takes continuous values or $n$ if it takes discrete values.
 
-#### Logarithmic complexity
+#### Logarithmic Complexity
 
 An algorithm has **logarithmic complexity** if its time complexity is $O(\log n)$. 
 
@@ -170,58 +170,135 @@ Sometimes, optimizing for time complexity (e.g., using a hash table) may increas
   - **Peek:** $O(1)$ — Returns the highest priority element without removing it.
   - **Ordering:** Unlike a standard FIFO (First-In-First-Out) queue, the internal order depends entirely on the priority logic (e.g., a Min-Priority Queue vs. a Max-Priority Queue).
 - **Use-cases:**
-  - **Dijkstra's Algorithm:** Used to constantly pick the next node with the shortest tentative distance.
-  - **Operating System Scheduling:** Managing processes where some tasks (like UI interrupts) have higher priority than background tasks.
-  - **Bandwidth Management:** Prioritizing real-time data packets (like VoIP or video) over standard web traffic in routers.
-  - **Huffman Coding:** Used in data compression algorithms to build the optimal prefix tree.
+  - **Dijkstra's Algorithm:** Used to constantly pick the next node with the smallest tentative distance.
+  - **Scheduling:** Prioritizing tasks in operating systems or job schedulers.
+  - **Huffman Coding:** Building a Huffman tree for optimal prefix coding.
 
-### Heaps (Binary Heap)
+### Heap
 
-- **Description:** A complete binary tree that satisfies the **heap property**: in a Max-Heap, the parent is always greater than or equal to its children; in a Min-Heap, it is less than or equal.
+- **Description:** A specialized tree-based data structure that satisfies the heap property. In a **Min-Heap**, for any given node, the value of the node is less than or equal to the values of its children. In a **Max-Heap**, the value of the node is greater than or equal to the values of its children.
 - **Main Properties:**
-  - **Access Max/Min:** $O(1)$.
-  - **Insert/Delete (Extract):** $O(\log n)$.
-  - **Heapify:** Building a heap from an unordered array takes $O(n)$.
-- **Use-cases:** Priority queues, scheduling algorithms (like K8s pod scheduling), and finding the "top K" elements in a stream.
+  - **Time Complexity:**
+    - Insert: $O(\log n)$.
+    - Extract Min/Max: $O(\log n)$.
+    - Peek: $O(1)$.
+  - **Space Complexity:** $O(n)$.
+- **Use-cases:** Priority queues, heap sort, and scheduling algorithms.
 
-### Graphs (Adjacency List vs. Matrix)
+### Graph
 
-- **Description:** A collection of vertices (nodes) connected by edges.
+- **Description:** A collection of nodes (vertices) connected by edges. Graphs can be directed or undirected, weighted or unweighted.
 - **Main Properties:**
-  - **Adjacency List:** $O(V + E)$ space. Better for sparse graphs. Fast to iterate over neighbors.
-  - **Adjacency Matrix:** $O(V^2)$ space. Better for dense graphs. $O(1)$ to check if an edge exists between two specific nodes.
-- **Use-cases:** Social networks, recommendation engines, pathfinding in maps, and dependency resolution in build systems.
-- **Example:**
-  ```python
-  graph = {
-      "Alice": ["Bob", "Charlie"],
-      "Bob": ["Alice", "David"],
-      "Charlie": ["Alice"],
-      "David": ["Bob"]
-  }
-  ```
+  - **Representation:** Adjacency matrix, adjacency list, or edge list.
+  - **Algorithms:**
+    - **Breadth-First Search (BFS):** Explores all neighbors at the present depth before moving on to nodes at the next depth level. Time complexity: $O(V + E)$.
+    - **Depth-First Search (DFS):** Explores as far as possible along each branch before backtracking. Time complexity: $O(V + E)$.
+    - **Dijkstra's Algorithm:** Finds the shortest path from a single source to all other nodes in a weighted graph. Time complexity: $O(E + V \log V)$ with a priority queue.
+    - **Kruskal's Algorithm:** Finds a minimum spanning tree for a connected weighted graph. Time complexity: $O(E \log E)$ or $O(E \log V)$.
+- **Use-cases:** Network routing, social network analysis, and dependency resolution.
 
-### Quick Reference: Time Complexity Table
+### Stack
 
-| **Data Structure**        | **Access**  | **Search**  | **Insertion** | **Deletion** | **Notes**                          |
-| ------------------------- | ----------- | ----------- | ------------- | ------------ | ---------------------------------- |
-| **Array**                 | $O(1)$      | $O(n)$      | $O(n)$        | $O(n)$       | Fixed size, contiguous memory.     |
-| **Hash Table**            | N/A         | $O(1)$      | $O(1)$        | $O(1)$       | Average case; worst case $O(n)$. |
-| **Priority Queue (Heap)** | $O(1)$      | $O(n)$      | $O(\log n)$   | $O(\log n)$  | Min/Max access in $O(1)$.        |
-| **BST (Balanced)**        | $O(\log n)$ | $O(\log n)$ | $O(\log n)$   | $O(\log n)$  | Requires balancing (AVL, Red-Black). |
-| **Singly Linked List**    | $O(n)$      | $O(n)$      | $O(1)$        | $O(1)$       | Dynamic size, non-contiguous.      |
-| **Trie**                  | N/A         | $O(L)$      | $O(L)$        | $O(L)$       | $L$ is the length of the word.   |
-| **Bloom Filter**          | N/A         | $O(1)$      | $O(1)$        | N/A          | Probabilistic, false positives.    |
+- **Description:** A linear data structure that follows the Last-In-First-Out (LIFO) principle. The last element added to the stack is the first one to be removed.
+- **Main Properties:**
+  - **Time Complexity:**
+    - Push: $O(1)$.
+    - Pop: $O(1)$.
+    - Peek: $O(1)$.
+  - **Space Complexity:** $O(n)$.
+- **Use-cases:** Function call management (call stack), undo mechanisms, and expression evaluation.
+
+### Queue
+
+- **Description:** A linear data structure that follows the First-In-First-Out (FIFO) principle. The first element added to the queue is the first one to be removed.
+- **Main Properties:**
+  - **Time Complexity:**
+    - Enqueue: $O(1)$.
+    - Dequeue: $O(1)$.
+    - Peek: $O(1)$.
+  - **Space Complexity:** $O(n)$.
+- **Use-cases:** Task scheduling, breadth-first search (BFS), and buffering.
+
+### Linked List
+
+- **Description:** A linear data structure where each element is a separate object (node) that contains a reference (or link) to the next node in the sequence.
+- **Main Properties:**
+  - **Time Complexity:**
+    - Insertion/Deletion at head: $O(1)$.
+    - Insertion/Deletion at tail: $O(1)$ if tail pointer is maintained, otherwise $O(n)$.
+    - Search: $O(n)$.
+  - **Space Complexity:** $O(n)$.
+- **Use-cases:** Implementing stacks, queues, and adjacency lists for graphs.
+
+### Array
+
+- **Description:** A contiguous block of memory that stores elements of the same type. Elements are accessed using an index.
+- **Main Properties:**
+  - **Time Complexity:**
+    - Access: $O(1)$.
+    - Search: $O(n)$ (unless sorted and using binary search).
+    - Insertion/Deletion: $O(n)$ (due to shifting elements).
+  - **Space Complexity:** $O(n)$.
+- **Use-cases:** Storing and accessing sequential data, matrices, and buffers.
 
 ------
 
 ## Common Algorithms
 
-### Dijkstra's Algorithm
+### Sorting Algorithms
 
+#### Bubble Sort
+- **Description:** Repeatedly steps through the list, compares adjacent elements, and swaps them if they are in the wrong order.
+- **Time Complexity:**
+  - Worst-case: $O(n^2)$.
+  - Best-case: $O(n)$ (when the list is already sorted).
+- **Space Complexity:** $O(1)$ (in-place sorting).
+- **Use-cases:** Educational purposes, small datasets.
+
+#### Merge Sort
+- **Description:** A divide-and-conquer algorithm that divides the input array into two halves, recursively sorts them, and then merges the two sorted halves.
+- **Time Complexity:** $O(n \log n)$ in all cases.
+- **Space Complexity:** $O(n)$ (requires additional space for merging).
+- **Use-cases:** Large datasets, external sorting.
+
+#### Quick Sort
+- **Description:** A divide-and-conquer algorithm that selects a 'pivot' element and partitions the array around the pivot.
+- **Time Complexity:**
+  - Average-case: $O(n \log n)$.
+  - Worst-case: $O(n^2)$ (when the pivot is poorly chosen).
+- **Space Complexity:** $O(\log n)$ (due to recursion stack).
+- **Use-cases:** General-purpose sorting, libraries (e.g., C's `qsort`).
+
+### Searching Algorithms
+
+#### Linear Search
+- **Description:** Sequentially checks each element in a list until it finds the target value.
+- **Time Complexity:** $O(n)$.
+- **Space Complexity:** $O(1)$.
+- **Use-cases:** Small or unsorted datasets.
+
+#### Binary Search
+- **Description:** Efficiently locates a target value in a sorted array by repeatedly dividing the search interval in half.
+- **Time Complexity:** $O(\log n)$.
+- **Space Complexity:** $O(1)$ (iterative) or $O(\log n)$ (recursive).
+- **Use-cases:** Searching in large, sorted datasets.
+
+### Graph Algorithms
+
+#### Breadth-First Search (BFS)
+- **Description:** Explores all neighbors at the present depth before moving on to nodes at the next depth level.
+- **Time Complexity:** $O(V + E)$.
+- **Use-cases:** Shortest path in unweighted graphs, level-order traversal.
+
+#### Depth-First Search (DFS)
+- **Description:** Explores as far as possible along each branch before backtracking.
+- **Time Complexity:** $O(V + E)$.
+- **Use-cases:** Topological sorting, detecting cycles, solving puzzles.
+
+#### Dijkstra's Algorithm
 - **Description:** A greedy algorithm for finding the shortest paths from a single source node to all other nodes in a graph with non-negative edge weights.
-- **Use-cases:** GPS navigation systems, network routing protocols, and finding the shortest path in a maze.
 - **Time Complexity:** $O((V + E) \log V)$, where $V$ is the number of vertices and $E$ is the number of edges.
+- **Use-cases:** GPS navigation systems, network routing protocols, and finding the shortest path in a maze.
 - **Example:**
   ```python
   import heapq
@@ -239,11 +316,10 @@ Sometimes, optimizing for time complexity (e.g., using a hash table) may increas
       return distances
   ```
 
-### Kruskal's Algorithm
-
-- **Description:** A greedy algorithm for finding the Minimum Spanning Tree (MST) of a graph. It uses the Union-Find data structure to efficiently manage and merge sets of nodes.
-- **Use-cases:** Network design, clustering, and circuit design.
+#### Kruskal's Algorithm
+- **Description:** Finds a minimum spanning tree for a connected weighted graph by sorting all edges and adding them if they connect disjoint sets.
 - **Time Complexity:** $O(E \log E)$ or $O(E \log V)$, where $E$ is the number of edges and $V$ is the number of vertices.
+- **Use-cases:** Network design, clustering, and circuit design.
 
 ### Floyd-Warshall Algorithm
 
@@ -325,4 +401,4 @@ This is a simple undirected graph representing connections between people.
 
 ## Conclusion
 
-This primer covers the fundamental data structures and algorithms that are essential for efficient problem-solving in computer science. Understanding these concepts will help you design scalable and optimized solutions for a wide range of problems. For further exploration, refer to the recommended books and online resources.
+Understanding data structures and algorithms is fundamental to writing efficient and scalable code. By choosing the right data structure and algorithm for a given problem, you can optimize both time and space complexity, leading to better performance and resource utilization. This primer provides a foundation for further exploration into more advanced topics in computer science.
