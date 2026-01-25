@@ -93,6 +93,8 @@ Sometimes, optimizing for time complexity (e.g., using a hash table) may increas
 
 ## Common Data Structures
 
+In this section we present some common structures used to store a number $n$ of elements, Unless stated otherwise, the examples are written in Python.
+
 ### Hash Table (Hash Map)
 
 - **Description:** A data structure that implements an associative array abstract data type, mapping keys to values using a **hash function** to compute an index into an array of buckets or slots.
@@ -100,14 +102,48 @@ Sometimes, optimizing for time complexity (e.g., using a hash table) may increas
   - **Time Complexity:** $O(1)$ average case for Search, Insert, and Delete. $O(n)$ worst case (when many keys hash to the same index).
   - **Space Complexity:** $O(n)$.
   - **Collisions:** Handled via **Chaining** (linked lists in each bucket) or **Open Addressing** (finding the next empty slot).
-- **Use-cases:** Database indexing, caching (LRU caches), unique element counting, and implementing Sets.
+- **Use-cases:** Database indexing, caching (Least Recently Used caches), unique element counting, and implementing Sets.
 - **Example:**
   ```python
-  cache = {}
-  def get(key):
-      return cache.get(key, None)
-  def put(key, value):
-      cache[key] = value
+  # A simple Lest Recently Used cache class (time complexity O(capacity))
+  class LRUcache:
+    def __init__(self, capacity: int):
+      self.capacity = capacity
+      self.data = {}
+      self.n_elements = 0
+      self.times_last_used = {}
+      self.time = 0
+      
+    # Get an element from the cache from its key, returning None if the key is not in the
+    # cache (time complexity O(1))
+    def get(self, key: int) -> int :
+      if key in self.data:
+        self.time += 1
+        self.times_last_used[key] = self.time
+        return self.data[key]
+      else:
+        return None
+    
+    # Put an element in the cache (time complexity O(1) if the cache is not full, 
+    # O(capacity) if it is full)
+    def put(self, key: int, value: int):
+      if not key in self.data:
+        self.n_elements += 1
+      self.data[key] = value
+      self.time += 1
+      self.times_last_used[key] = self.time
+      
+      # If the number of elements exceeds the capacity, evict the least-recently used
+      if self.n_elements > self.capacity :
+        time_last_used = self.time
+        last_used_key = key
+        for existing_key, time_used in self.times_last_used.items():
+          if time_used < time_last_used:
+            time_last_used = time_used
+            last_used_key = existing_key
+        del self.data[last_used_key]
+        del self.times_last_used[last_used_key]
+        self.n_elements -= 1
   ```
 
 ### Trie (Prefix Tree)
