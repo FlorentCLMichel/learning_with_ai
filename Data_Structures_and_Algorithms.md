@@ -9,11 +9,11 @@ This document provides a brief overview of fundamental data structures and algor
 ### Mathematical Definitions of Asymptotic Notations
 
 #### Big-O Notation (O)
-The Big-O notation describes the **upper bound** of the growth rate of a function. Formally, given a real-valued function $f$ and a real-valued non-negative function $g$ of one real (or integer) variable, we say $f(x) \mathop{=}_{x \to \infty} O(g(x))$ if
+The Big-O notation describes an **upper bound** of the growth rate of a function. Formally, given a real-valued function $f$ and a real-valued non-negative function $g$ of one real (or integer) variable, we say $f(x) \mathop{=}_{x \to \infty} O(g(x))$ if
 $$
 \exists c > 0 \quad \exists x_0 \in \mathbb{R} \quad \forall x \geq x_0 \quad \left\lvert f(x) \right\rvert \leq c \, g(x) .
 $$
-This notation is widely used in computer science to analyze the worst-case complexity of algorithms. Typically, $f$ will be a non-negative function describing the runtime, memory use, or power draw of running an algorithm.
+This notation is widely used in computer science to analyze the worst-case complexity of algorithms. Typically, $f$ will be a non-negative function describing the runtime, memory use, or energy cost of running an algorithm. Intuitively, the notation $f(x) = O(g(x))$ may then be interpreted as ‘$f(x)$ does not grow faster than $g(x)$ (up to a multiplicative constant) as $x$ tends to infinity’.
 
 For example, if $f(n) = 3n^2 + 2n + 1$, then $f(n) \mathop{=}_{n \to \infty} O(n^2)$. Notice that we also have $f(n) \mathop{=}_{n \to \infty} O(n^3)$ and $f(n) \mathop{=}_{n \to \infty} O(2^n)$—the ‘Big-O’ notation does not need to be tight. (However, $f(n) \mathop{=}_{n \to \infty} O(n^1)$ is incorrect.)
 
@@ -24,7 +24,7 @@ $$
 $$
 Notice that the only (but important) difference is the quantifier of $c$.
 
-For example, if $f(n) = 3n^2 + 2n + 1$, then $f(n) \mathop{=}_{n \to \infty} o(n^3)$. Notice that we also have $f(n) \mathop{=}_{n \to \infty} o(n^4)$ and $f(n) \mathop{=}_{n \to \infty} o(2^n)$—the ‘Little-o’ notation, like the ‘Big-O’ one, does not need to be tight. However, $f(n) \mathop{=}_{n \to \infty} o(n^2)$ is incorrect.
+For example, if $f(n) = 3n^2 + 2n + 1$, then $f(n) \mathop{=}_{n \to \infty} o(n^3)$. Notice that we also have $f(n) \mathop{=}_{n \to \infty} o(n^4)$ and $f(n) \mathop{=}_{n \to \infty} o(2^n)$—the ‘Little-o’ notation, like the ‘Big-O’ one, does not need to be tight. However, $f(n) \mathop{=}_{n \to \infty} o(n^2)$ is incorrect. Intuitively, the notation $f(x) = o(g(x))$ may often be interpreted as ‘$f(x)$ grows strictly more slowly than $g(x)$ as $x$ tends to infinity’.
 
 While less commonly used in practice, it is useful for more precise theoretical analysis.
 
@@ -34,38 +34,40 @@ $$
 \exists c_1 > 0 \quad \exists c_2 > 0 \quad \exists x_0 \in \mathbb{R} \quad \forall x \geq x_0 \quad c_1 \, g(x) \leq f(x) \leq c_2 \, g(x) .
 $$
 
-For example, if $f(n) = 3n^2 + 2n + 1$, then $f(n) \mathop{=}_{n \to \infty} \Theta(n^2)$. Saying that $f(n) \mathop{=}_{n \to \infty} \Theta(n^3)$ or $f(n) \mathop{=}_{n \to \infty} \Theta(n)$ is incorrect. In this sense, the ‘Theta’ notation is tighter than ‘Big-O’.
+For example, if $f(n) = 3n^2 + 2n + 1$, then $f(n) \mathop{=}_{n \to \infty} \Theta(n^2)$. Saying that $f(n) \mathop{=}_{n \to \infty} \Theta(n^3)$ or $f(n) \mathop{=}_{n \to \infty} \Theta(n)$ is incorrect. In this sense, the ‘Theta’ notation is tighter than ‘Big-O’. Intuitively, the notation $f(x) = \Theta(g(x))$ may often be interpreted as ‘$f(x)$ and $g(x)$ grow with the same rate as $x$ tends to infinity’.
 
-This notation is useful for describing both the upper and lower bounds of an algorithm's complexity.
+This notation is useful for describing both the upper and lower bounds of an algorithm's complexity. 
 
 #### Notes on Notations
 
-When there is no reasonable ground for confusion, we may omit the index $x \to \infty$.
+When there is no reasonable ground for confusion, we may omit the subscript $x \to \infty$. (The reason for this subscript is that, in Mathematics, one may want to compare the behavious of two functions in different limits, *e.g.* $x \to -\infty$ or $x \to x_l$ for some finits value $x_l$. For instance, we can write $(x + 1) / x^2 \mathop{=}_{x \to 0} \Theta(1 / x^2)$.)
 
 It is common to replace the functions $f$ and/or $g$ by their expressions in terms of their variable, usually denoted by $x$ if it takes continuous values or $n$ if it takes discrete values.
 
 #### Logarithmic Complexity
 
-An algorithm has **logarithmic complexity** if its time complexity is $O(\log n)$. 
+An algorithm has **logarithmic complexity** if its time complexity is $\Theta(\log n)$. 
 
-Logarithmic-time algorithms are generally considered very efficient and scalable for large inputs.
+Logarithmic-time algorithms are generally considered very efficient and scalable for large inputs, as multiplying the input size by $2$ only adds (at least asymptotically) a constant to the runtime.
 
 #### Polynomial Complexity
 
-An algorithm has **polynomial complexity** if its time complexity is $O(n^k)$ for some constant, positive $k$. Examples include:
+An algorithm has **polynomial complexity** if its time complexity is $\Theta(n^k)$ for some constant, positive $k$. Examples include:
 - Linear time: $O(n)$
 - Quadratic time: $O(n^2)$
 - Cubic time: $O(n^3)$
 
-Polynomial-time algorithms are generally considered relatively efficient and scalable for large inputs. However, how efficient they are in practice critically depends on the exponent.
+Polynomial-time algorithms are generally considered relatively efficient and scalable for large inputs. However, how efficient they are in practice critically depends on the exponent and, to a lesser extent, the multiplicative constant not captured by the ‘Big-O’ notation.
 
 #### Exponential Complexity
 
-An algorithm has **exponential complexity** if its time complexity is $O(2^{n})$ or $O(k^n)$ for some constant $k > 1$. These algorithms quickly become impractical for large inputs due to their rapid growth.
+An algorithm has **exponential complexity** if its time complexity is $\Theta(k^n)$ for some constant $k > 1$. These algorithms quickly become impractical for large inputs due to their rapid growth.
 
-### Time Complexity
+### Types of complexity often used in Computer Science
 
-- **Description:** Time complexity measures the amount of time an algorithm takes to complete as a function of the size of the input. It is expressed using Big-O notation, which describes the upper bound of the growth rate.
+#### Time Complexity
+
+- **Description:** Time complexity measures the amount of time an algorithm takes to complete as a function of the size of the input. It is expressed using either the Big-O notation, which describes the upper bound of the growth rate, or te tighter Theta notation.
 - **Common Notations:**
   - **$O(1)$:** Constant time. The algorithm takes the same amount of time regardless of input size.
   - **$O(\log n)$:** Logarithmic time. The time increases logarithmically with the input size.
@@ -74,9 +76,9 @@ An algorithm has **exponential complexity** if its time complexity is $O(2^{n})$
   - **$O(n^2)$:** Quadratic time. The time increases quadratically with the input size, often seen in nested loops.
   - **$O(2^n)$:** Exponential time. The time doubles with each additional input element, typical in recursive algorithms without optimization.
 
-### Space Complexity
+#### Space Complexity
 
-- **Description:** Space complexity measures the amount of memory an algorithm uses as a function of the input size. It is also expressed using Big-O notation.
+- **Description:** Space complexity measures the amount of memory an algorithm uses as a function of the input size. It is also expressed using Big-O or Theta notations.
 - **Common Notations:** Similar to the above, replacing ‘time’ with ‘space’.
 
 ### Why Complexity Matters
