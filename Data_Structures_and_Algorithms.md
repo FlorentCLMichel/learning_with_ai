@@ -105,45 +105,69 @@ In this section we present some common structures used to store a number $n$ of 
 - **Use-cases:** Database indexing, caching (Least Recently Used caches), unique element counting, and implementing Sets.
 - **Example:**
   ```python
-  # A simple Lest Recently Used cache class (time complexity O(capacity))
+  # A node class with a key, a value, and pointers to the previous and next nodes.
+  class Node:
+      def __init__(self, key, value):
+          self.key = key
+          self.value = value
+          self.prev = None
+          self.next = None
+  
+  # We implement an LRU cache using a hash map for O(1) access and a doubly linked list
+  # for O(1) eviction.
   class LRUcache:
-    def __init__(self, capacity: int):
-      self.capacity = capacity
-      self.data = {}
-      self.n_elements = 0
-      self.times_last_used = {}
-      self.time = 0
-      
-    # Get an element from the cache from its key, returning None if the key is not in the
-    # cache (time complexity O(1))
-    def get(self, key: int) -> int :
-      if key in self.data:
-        self.time += 1
-        self.times_last_used[key] = self.time
-        return self.data[key]
-      else:
-        return None
-    
-    # Put an element in the cache (time complexity O(1) if the cache is not full, 
-    # O(capacity) if it is full)
-    def put(self, key: int, value: int):
-      if not key in self.data:
-        self.n_elements += 1
-      self.data[key] = value
-      self.time += 1
-      self.times_last_used[key] = self.time
-      
-      # If the number of elements exceeds the capacity, evict the least-recently used
-      if self.n_elements > self.capacity :
-        time_last_used = self.time
-        last_used_key = key
-        for existing_key, time_used in self.times_last_used.items():
-          if time_used < time_last_used:
-            time_last_used = time_used
-            last_used_key = existing_key
-        del self.data[last_used_key]
-        del self.times_last_used[last_used_key]
-        self.n_elements -= 1
+      def __init__(self, capacity: int):
+          self.capacity = capacity
+          self.data = {}  # Maps keys to nodes
+          self.head = Node(None, None)  # Dummy head
+          self.tail = Node(None, None)  # Dummy tail
+          self.head.next = self.tail
+          self.tail.prev = self.head
+  
+      # To remove a node, simply link the previous and next nodes.
+      def _remove_node(self, node):
+          """Remove a node from the linked list."""
+          prev_node = node.prev
+          next_node = node.next
+          prev_node.next = next_node
+          next_node.prev = prev_node
+  
+      # To add a node to the front, put it just after the dummy head.
+      def _add_to_front(self, node):
+          """Add a node to the front of the linked list."""
+          node.prev = self.head
+          node.next = self.head.next
+          self.head.next.prev = node
+          self.head.next = node
+  
+      def get(self, key: int) -> int:
+          """Get the value corresponding to a key; return None if the key is not in the cache."""
+          if key in self.data:
+              node = self.data[key]
+              self._remove_node(node)
+              self._add_to_front(node)
+              return node.value
+          else:
+              return None
+  
+      def put(self, key: int, value: int):
+          """Put a value in the cache. If the key already holds a value, it is updated. Otherwise, a
+             new (key, value) pair is added. If the number of elements exceeds the capacity, the
+             least recently used element is evicted."""
+          if key in self.data:
+              node = self.data[key]
+              node.value = value
+              self._remove_node(node)
+              self._add_to_front(node)
+          else:
+              if len(self.data) >= self.capacity:
+                  # Evict the least recently used node.
+                  lru_node = self.tail.prev
+                  self._remove_node(lru_node)
+                  del self.data[lru_node.key]
+              new_node = Node(key, value)
+              self.data[key] = new_node
+              self._add_to_front(new_node)
   ```
 
 ### Trie (Prefix Tree)
