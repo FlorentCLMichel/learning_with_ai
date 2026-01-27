@@ -103,72 +103,73 @@ In this section we present some common structures used to store a number $n$ of 
   - **Space Complexity:** $O(n)$.
   - **Collisions:** Handled via **Chaining** (linked lists in each bucket) or **Open Addressing** (finding the next empty slot).
 - **Use-cases:** Database indexing, caching (Least Recently Used caches), unique element counting, and implementing Sets.
-- **Example:**
-  ```python
-  # A node class with a key, a value, and pointers to the previous and next nodes.
-  class Node:
-      def __init__(self, key, value):
-          self.key = key
-          self.value = value
-          self.prev = None
-          self.next = None
-  
-  # We implement an LRU cache using a hash map for O(1) access and a doubly linked list
-  # for O(1) eviction.
-  class LRUcache:
-      def __init__(self, capacity: int):
-          self.capacity = capacity
-          self.data = {}  # Maps keys to nodes
-          self.head = Node(None, None)  # Dummy head
-          self.tail = Node(None, None)  # Dummy tail
-          self.head.next = self.tail
-          self.tail.prev = self.head
-  
-      # To remove a node, simply link the previous and next nodes.
-      def _remove_node(self, node):
-          """Remove a node from the linked list."""
-          prev_node = node.prev
-          next_node = node.next
-          prev_node.next = next_node
-          next_node.prev = prev_node
-  
-      # To add a node to the front, put it just after the dummy head.
-      def _add_to_front(self, node):
-          """Add a node to the front of the linked list."""
-          node.prev = self.head
-          node.next = self.head.next
-          self.head.next.prev = node
-          self.head.next = node
-  
-      def get(self, key: int) -> int:
-          """Get the value corresponding to a key; return None if the key is not in the cache."""
-          if key in self.data:
-              node = self.data[key]
-              self._remove_node(node)
-              self._add_to_front(node)
-              return node.value
-          else:
-              return None
-  
-      def put(self, key: int, value: int):
-          """Put a value in the cache. If the key already holds a value, it is updated. Otherwise, a
-             new (key, value) pair is added. If the number of elements exceeds the capacity, the
-             least recently used element is evicted."""
-          if key in self.data:
-              node = self.data[key]
-              node.value = value
-              self._remove_node(node)
-              self._add_to_front(node)
-          else:
-              if len(self.data) >= self.capacity:
-                  # Evict the least recently used node.
-                  lru_node = self.tail.prev
-                  self._remove_node(lru_node)
-                  del self.data[lru_node.key]
-              new_node = Node(key, value)
-              self.data[key] = new_node
-              self._add_to_front(new_node)
-  ```
+
+**Example:**
+```python
+# A node class with a key, a value, and pointers to the previous and next nodes.
+class Node:
+    def __init__(self, key, value):
+        self.key = key
+        self.value = value
+        self.prev = None
+        self.next = None
+
+# We implement an LRU cache using a hash map for O(1) access and a doubly linked list
+# for O(1) eviction.
+class LRUcache:
+    def __init__(self, capacity: int):
+        self.capacity = capacity
+        self.data = {}  # Maps keys to nodes
+        self.head = Node(None, None)  # Dummy head
+        self.tail = Node(None, None)  # Dummy tail
+        self.head.next = self.tail
+        self.tail.prev = self.head
+
+    # To remove a node, simply link the previous and next nodes.
+    def _remove_node(self, node):
+        """Remove a node from the linked list."""
+        prev_node = node.prev
+        next_node = node.next
+        prev_node.next = next_node
+        next_node.prev = prev_node
+
+    # To add a node to the front, put it just after the dummy head.
+    def _add_to_front(self, node):
+        """Add a node to the front of the linked list."""
+        node.prev = self.head
+        node.next = self.head.next
+        self.head.next.prev = node
+        self.head.next = node
+
+    def get(self, key: int) -> int:
+        """Get the value corresponding to a key; return None if the key is not in the cache."""
+        if key in self.data:
+            node = self.data[key]
+            self._remove_node(node)
+            self._add_to_front(node)
+            return node.value
+        else:
+            return None
+
+    def put(self, key: int, value: int):
+        """Put a value in the cache. If the key already holds a value, it is updated. Otherwise, a
+           new (key, value) pair is added. If the number of elements exceeds the capacity, the
+           least recently used element is evicted."""
+        if key in self.data:
+            node = self.data[key]
+            node.value = value
+            self._remove_node(node)
+            self._add_to_front(node)
+        else:
+            if len(self.data) >= self.capacity:
+                # Evict the least recently used node.
+                lru_node = self.tail.prev
+                self._remove_node(lru_node)
+                del self.data[lru_node.key]
+            new_node = Node(key, value)
+            self.data[key] = new_node
+            self._add_to_front(new_node)
+```
 
 ### Trie (Prefix Tree)
 
@@ -179,17 +180,135 @@ In this section we present some common structures used to store a number $n$ of 
     - Search: $O(L)$.
     - Prefix Search: $O(L)$.
 - **Use-cases:** Autocomplete systems, spell checkers, and IP routing tables.
-- **Example:**
-  ```python
-  trie = {}
-  def insert(word):
-      node = trie
-      for char in word:
-          if char not in node:
-              node[char] = {}
-          node = node[char]
-      node["*"] = True
-  ```
+
+**Example implementation:**
+
+```python
+from dataclasses import dataclass, field
+from typing import Dict, Iterable, List, Optional
+
+
+@dataclass
+class _Node:
+    children: Dict[str, "_Node"] = field(default_factory=dict)
+    is_end: bool = False
+
+
+class Trie:
+    """Trie with explicit node structure and end markers."""
+
+    def __init__(self, _root: Optional[_Node] = None):
+        self._root = _root if _root is not None else _Node()
+
+    def insert(self, word: str) -> None:
+        """Insert a word in the trie"""
+        node = self._root
+        for ch in word:
+            # If `ch` is not a child of the node, add it
+            node = node.children.setdefault(ch, _Node())
+        # Mark the final node as terminating
+        node.is_end = True
+
+    def search(self, word: str) -> bool:
+        """Check if `word` is in the trie"""
+        node = self._root
+        for ch in word:
+            if ch not in node.children:
+                # If the character is not a child of the current node, `word` is not in the trie.
+                return False
+            node = node.children[ch]
+        # If we reach this point, the word is in the trie if and only if the current node is 
+        # terminating.
+        return node.is_end
+
+    def starts_with(self, prefix: str) -> bool:
+        """Check if the trie contains a word starting with `prefix`"""
+        node = self._root
+        for ch in prefix:
+            if ch not in node.children:
+                # If the character is not a child of the current node, the trie contains no word 
+                # starting with `prefix`.
+                return False
+            node = node.children[ch]
+        # If we reach this point, the trie contains at least one word starting with `prefix`.
+        return True
+
+    def prefix_search(self, prefix: str) -> "Trie":
+        node = self._root
+        for ch in prefix:
+            if ch not in node.children:
+                return Trie()  # empty
+            node = node.children[ch]
+        # New Trie whose root is the node at prefix (shared structure).
+        return Trie(_root=node)
+
+    def words(self, prefix: str = "") -> Iterable[str]:
+        """Iterator over all words starting with `prefix`"""
+        node = self._root
+
+        # Move to the node corresponding to the prefox if it exists
+        for ch in prefix:
+            if ch not in node.children:
+                return
+            node = node.children[ch]
+
+        # Depth-first search over the sub-trie
+        def dfs(cur: _Node, path: List[str]):
+            if cur.is_end:
+                yield "".join(path)
+            for k, nxt in cur.children.items():
+                path.append(k)
+                yield from dfs(nxt, path)
+                path.pop()
+
+        yield from dfs(node, list(prefix))
+
+    def delete(self, word: str) -> bool:
+        """Delete `word` from the trie and return `True` if it existed, or `False` if not"""
+        def _delete(cur: _Node, i: int) -> bool:
+            if i == len(word):
+                # Reached the end of the word; if this node is not terminating, the word is not there
+                if not cur.is_end:
+                    return False
+                # Setting the current node as non-terminating deletes the word
+                cur.is_end = False
+                # THis branch can be deleted if and only if this node has no child
+                return len(cur.children) == 0
+            ch = word[i]
+            # If the current character in not in any child of the current node, the word is not there 
+            # and this branch should not be deleted
+            if ch not in cur.children:
+                return False
+            # If it is, move one node down and check the next character
+            should_prune = _delete(cur.children[ch], i + 1)
+            if should_prune:
+                # Delete the child node if needed
+                del cur.children[ch]
+                # THe current node can be deleted if and only if
+                #  * it is not terminating (if it is, it encodes a different word)
+                #  * it has no more child
+                return (not cur.is_end) and (len(cur.children) == 0)
+
+            return False
+
+        # Check if the word exists; if yes, delete it
+        existed = self.search(word)
+        if existed:
+            _ = _delete(self._root, 0)
+        return existed
+
+    def __contains__(self, word: str) -> bool:
+        return self.search(word)
+
+    def __iter__(self):
+        return iter(self.words())
+
+    def __len__(self) -> int:
+        return sum(1 for _ in self.words())
+
+    def __repr__(self) -> str:
+        return f"Trie(size={len(self)})"
+```
 
 ### Disjoint Set Union (DSU) or Union-Find
 
