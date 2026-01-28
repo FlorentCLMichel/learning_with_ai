@@ -346,148 +346,227 @@ class Trie:
 
 ```python
 from dataclasses import dataclass
-from random import getrandbits
-from typing import Optional
+from typing import Iterable, Iterator, List, Optional, Tuple
+
 
 @dataclass
 class _Node:
+    """Internal node used by :class:`BinarySearchTree`."""
+
     data: int
     left: Optional["_Node"] = None
     right: Optional["_Node"] = None
 
+
 class BinarySearchTree:
-    """A simple Binary Search Tree class"""
+    """A simple (un‑threaded) binary search tree for integers.
 
-    def __init__(self, data: [int] = []):
-        self.root = None
-        self.insert(data)
+    The tree does **not** self‑balance; you can call :meth:`balance` to rebuild a
+    perfectly balanced tree from the current contents.
 
-    def insert_single(self, data: int): 
-        """Insert the integer `data` in the tree"""
-        current_node = self.root
-        if current_node is None: 
-            self.root = _Node(data)
+    Example
+    -------
+    >>> bst = BinarySearchTree([5, 2, 8, 1, 3])
+    >>> 3 in bst
+    True
+    >>> bst.delete(2)
+    True
+    >>> list(bst)          # in‑order traversal
+    [1, 3, 5, 8]
+    >>> bst.depth()
+    3
+    """
+
+    # ---------------------------------------------------------------------
+    # Construction / basic helpers
+    # ---------------------------------------------------------------------
+
+    def __init__(self, data: Optional[Iterable[int]] = None) -> None:
+        """Create a new tree.
+
+        If *data* is supplied, each element is inserted using
+        :meth:`insert_single`. ``data`` may be any iterable of ``int``.
+        """
+        self.root: Optional[_Node] = None
+        if data is not None:
+            self.insert(data)
+
+    # ---------------------------------------------------------------------
+    # Public API – insertion
+    # ---------------------------------------------------------------------
+
+    def insert_single(self, value: int) -> None:
+        """Insert a single integer ``value`` into the tree.
+
+        Duplicates are allowed and are placed on the right subtree.
+        """
+        if self.root is None:
+            self.root = _Node(value)
             return
+
+        cur = self.root
         while True:
-            if data < current_node.data:
-                if current_node.left is None:
-                    current_node.left = _Node(data = data)
-                    break
-                else:
-                    current_node = current_node.left
-            else:
-                if current_node.right is None:
-                    current_node.right = _Node(data = data)
-                    break
-                else:
-                    current_node = current_node.right
+            if value < cur.data:
+                if cur.left is None:
+                    cur.left = _Node(value)
+                    return
+                cur = cur.left
+            else:  # ``value >= cur.data`` – duplicates go to the right side
+                if cur.right is None:
+                    cur.right = _Node(value)
+                    return
+                cur = cur.right
 
-    def insert(self, data: [int]):
-        """Insert the list `data` in the tree"""
-        for x in data:
-            self.insert_single(x)
+    def insert(self, values: Iterable[int]) -> None:
+        """Insert every integer from *values* into the tree."""
+        for v in values:
+            self.insert_single(v)
 
-    def depth(self) -> int: 
-        """Return the depth of the tree"""
-        def _depth(node: _Node) -> int:
+    # ---------------------------------------------------------------------
+    # Public API – queries
+    # ---------------------------------------------------------------------
+
+    def depth(self) -> int:
+        """Return the maximum depth (height) of the tree.  Empty tree → 0."""
+
+        def _depth(node: Optional[_Node]) -> int:
             if node is None:
                 return 0
             return 1 + max(_depth(node.left), _depth(node.right))
+
         return _depth(self.root)
-    
-    def size(self) -> int: 
-        """Return the number of elements in the tree"""
-        def _size(node: _Node) -> int:
+
+    def size(self) -> int:
+        """Return the number of nodes stored in the tree."""
+
+        def _size(node: Optional[_Node]) -> int:
             if node is None:
                 return 0
             return 1 + _size(node.left) + _size(node.right)
+
         return _size(self.root)
-    
-    def search(self, data: int) -> bool:
-        """Insert `data` in the tree"""
-        current_node = self.root
-        while True:
-            if current_node is None:
-                return False
-            elif data == current_node.data:
+
+    def search(self, value: int) -> bool:
+        """Return ``True`` if *value* exists in the tree, ``False`` otherwise."""
+        cur = self.root
+        while cur is not None:
+            if value == cur.data:
                 return True
-            elif data < current_node.data:
-                current_node = current_node.left
-                continue
-            else:
-                current_node = current_node.right
-                continue
-    
-    def delete(self, data: int) -> bool:
-        """Delete one instance of `data` from the tree and return `True` if it was there or `False 
-           if not"""
-        current_node = self.root
-       
-        def _delete_root(node: _Node) -> _Node :
-            direction = getrandbits(1)
-            if node.left is None and node.right is None:
-                return None
-            if node.left is None or direction:
-                node.data = node.right.data
-                node.right = _delete_root(node.right)
-                return node
-            else:
-                node.data = node.left.data
-                node.left = _delete_root(node.left)
-                return node
+            cur = cur.left if value < cur.data else cur.right
+        return False
 
-        if current_node is None:
-            return False
+    # ---------------------------------------------------------------------
+    # Public API – deletion
+    # ---------------------------------------------------------------------
 
-        if current_node.data == data:
-            self.root = _delete_root(current_node)
-            return True
+    def delete(self, value: int) -> bool:
+        """Delete *one* occurrence of ``value`` from the tree.
 
-        previous_node = self.root
-        while True:
-            if previous_node.left is None and previous_node.right is None:
-                return False
-            elif data < previous_node.data:
-                current_node = previous_node.left
-                if current_node.data == data:
-                    previous_node.left = _delete_root(current_node)
-                    return True
-                previous_node = current_node
-            else:
-                current_node = previous_node.right
-                if current_node.data == data:
-                    previous_node.right = _delete_root(current_node)
-                    return True
-                previous_node = current_node
+        Returns ``True`` if the value was present and removed, ``False`` otherwise.
+        """
+        self.root, deleted = self._delete_rec(self.root, value)
+        return deleted
 
-    def dfs(self): 
-        """Iterate over the values stored in the tree (depth-first)"""
-        
-        def _dfs(node: _Node):
-            if node is not None: 
-                yield from _dfs(node.left)
-                yield node.data
-                yield from _dfs(node.right)
+    def _delete_rec(self, node: Optional[_Node], value: int) -> Tuple[Optional[_Node], bool]:
+        """Recursive helper that returns ``(new_subtree_root, deleted_flag)``.
 
-        yield from _dfs(self.root)
-    
-    def balance(self):
-        """Re-balance the tree"""
+        The implementation follows the classic three‑case BST deletion algorithm:
+        * leaf node
+        * node with a single child
+        * node with two children – replace with the in‑order successor.
+        """
+        if node is None:
+            return None, False
 
-        # Get all the values in the tree
-        data = list(self.dfs())
+        if value < node.data:
+            node.left, deleted = self._delete_rec(node.left, value)
+            return node, deleted
+        if value > node.data:
+            node.right, deleted = self._delete_rec(node.right, value)
+            return node, deleted
 
-        # Reorder the values
-        def _reorder(data: list[int]) -> list[int] :
-            if len(data) <= 2:
-                return data
-            index_middle = len(data) // 2
-            return [data[index_middle]] + _reorder(data[:index_middle]) + _reorder(data[index_middle+1:])
-        data_reordered = _reorder(data)
+        # ---- we have found the node to delete ----
+        # Case 1: leaf
+        if node.left is None and node.right is None:
+            return None, True
 
-        # Re-build the tree
-        self.root = None
-        self.insert(data_reordered)
+        # Case 2: only one child
+        if node.left is None:
+            return node.right, True
+        if node.right is None:
+            return node.left, True
+
+        # Case 3: two children – replace with in‑order successor
+        successor = self._min_node(node.right)
+        node.data = successor.data
+        # Delete the successor (it has at most one child)
+        node.right, _ = self._delete_rec(node.right, successor.data)
+        return node, True
+
+    @staticmethod
+    def _min_node(node: _Node) -> _Node:
+        """Return the node with the smallest key in the subtree rooted at *node*."""
+        while node.left is not None:
+            node = node.left
+        return node
+
+    # ---------------------------------------------------------------------
+    # Traversal helpers
+    # ---------------------------------------------------------------------
+
+    def dfs(self) -> Iterator[int]:
+        """Yield the values in **in‑order** (left, root, right)."""
+        yield from self._inorder(self.root)
+
+    def _inorder(self, node: Optional[_Node]) -> Iterator[int]:
+        if node is not None:
+            yield from self._inorder(node.left)
+            yield node.data
+            yield from self._inorder(node.right)
+
+    # Make the tree itself iterable (for‑in loops)
+    __iter__ = dfs
+
+    # ---------------------------------------------------------------------
+    # Convenience dunder methods
+    # ---------------------------------------------------------------------
+
+    def __len__(self) -> int:
+        """``len(bst)`` → number of elements."""
+        return self.size()
+
+    def __contains__(self, value: int) -> bool:
+        """``value in bst`` → ``bst.search(value)``."""
+        return self.search(value)
+
+    @property
+    def values(self) -> List[int]:
+        """A list of all values in sorted order (in‑order traversal)."""
+        return list(self.dfs())
+
+    # ---------------------------------------------------------------------
+    # Balancing
+    # ---------------------------------------------------------------------
+
+    def balance(self) -> None:
+        """Re‑build the tree into a perfectly balanced BST.
+
+        The algorithm:
+        1. Collect all values (they are already sorted by an in‑order walk).
+        2. Recursively pick the middle element as the root of each sub‑tree.
+        """
+        sorted_vals = self.values
+        self.root = self._build_balanced(sorted_vals, 0, len(sorted_vals) - 1)
+
+    def _build_balanced(self, arr: List[int], lo: int, hi: int) -> Optional[_Node]:
+        """Recursive helper that builds a balanced BST from ``arr[lo:hi+1]``."""
+        if lo > hi:
+            return None
+        mid = (lo + hi) // 2
+        node = _Node(arr[mid])
+        node.left = self._build_balanced(arr, lo, mid - 1)
+        node.right = self._build_balanced(arr, mid + 1, hi)
+        return node
 ```
 
 ### Priority Queue
