@@ -486,6 +486,10 @@ class BinarySearchTree:
         """Delete *one* occurrence of ``value`` from the tree.
 
         Returns ``True`` if the value was present and removed, ``False`` otherwise.
+        
+        Complexity: O(d) where d is the depth of the tree. 
+            Worst case: O(n) where n is the number of elements in the tree.
+            Average case (for balanced or near-balanced trees): O(log(n)).
         """
         self.root, deleted = self._delete_rec(self.root, value)
         return deleted
@@ -498,9 +502,12 @@ class BinarySearchTree:
         * node with a single child
         * node with two children – replace with the in‑order successor.
         """
+
+        # If we reach this point, the value is not in the tree
         if node is None:
             return None, False
 
+        # If value != node.data, move to the next node
         if value < node.data:
             node.left, deleted = self._delete_rec(node.left, value)
             return node, deleted
@@ -520,25 +527,25 @@ class BinarySearchTree:
             return node.left, True
 
         # Case 3: two children – replace with in‑order successor
-        successor = self._min_node(node.right)
-        node.data = successor.data
+        successor_data = self._min_node(node.right)
+        node.data = successor_data
         # Delete the successor (it has at most one child)
-        node.right, _ = self._delete_rec(node.right, successor.data)
+        node.right, _ = self._delete_rec(node.right, successor_data)
         return node, True
 
     @staticmethod
-    def _min_node(node: _Node) -> _Node:
-        """Return the node with the smallest key in the subtree rooted at *node*."""
+    def _min_node(node: _Node) -> int:
+        """Return the smallest key in the subtree rooted at *node*."""
         while node.left is not None:
             node = node.left
-        return node
+        return node.data
 
     # ---------------------------------------------------------------------
     # Traversal helpers
     # ---------------------------------------------------------------------
 
-    def dfs(self) -> Iterator[int]:
-        """Yield the values in **in‑order** (left, root, right)."""
+    def dft(self) -> Iterator[int]:
+        """Depth-first traversal yielding the values in order (left, root, right)."""
         yield from self._inorder(self.root)
 
     def _inorder(self, node: Optional[_Node]) -> Iterator[int]:
@@ -548,7 +555,7 @@ class BinarySearchTree:
             yield from self._inorder(node.right)
 
     # Make the tree itself iterable (for‑in loops)
-    __iter__ = dfs
+    __iter__ = dft
 
     # ---------------------------------------------------------------------
     # Convenience dunder methods
@@ -565,7 +572,7 @@ class BinarySearchTree:
     @property
     def values(self) -> List[int]:
         """A list of all values in sorted order (in‑order traversal)."""
-        return list(self.dfs())
+        return list(self.dft())
 
     # ---------------------------------------------------------------------
     # Balancing
@@ -577,6 +584,8 @@ class BinarySearchTree:
         The algorithm:
         1. Collect all values (they are already sorted by an in‑order walk).
         2. Recursively pick the middle element as the root of each sub‑tree.
+
+        Complexity: O(n) where n is the number of elements in the tree.
         """
         sorted_vals = self.values
         self.root = self._build_balanced(sorted_vals, 0, len(sorted_vals) - 1)
