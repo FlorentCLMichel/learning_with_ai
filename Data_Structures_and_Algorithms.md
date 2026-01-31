@@ -633,9 +633,53 @@ class BinarySearchTree:
   - **Algorithms:**
     - **Breadth-First Search (BFS):** Explores all neighbors at the present depth before moving on to nodes at the next depth level. Time complexity: $O(V + E)$.
     - **Depth-First Search (DFS):** Explores as far as possible along each branch before backtracking. Time complexity: $O(V + E)$.
-    - **Dijkstra's Algorithm:** Finds the shortest path from a single source to all other nodes in a weighted graph. Time complexity: $O(E + V \log V)$ with a priority queue.
-    - **Kruskal's Algorithm:** Finds a minimum spanning tree for a connected weighted graph. Time complexity: $O(E \log E)$ or $O(E \log V)$.
+    - [**Dijkstra's Algorithm:**](#Dijkstra's-Algorithm) Finds the shortest path from a single source to all other nodes in a weighted graph. Time complexity: $O(E + V \log V)$ with a priority queue.
+    - [**Kruskal's Algorithm:**](#Kruskal's-Algorithm) Finds a minimum spanning tree for a connected weighted graph. Time complexity: $O(E \log E)$ or $O(E \log V)$.
 - **Use-cases:** Network routing, social network analysis, and dependency resolution.
+
+**Example implementation:**
+```python
+from typing import Dict
+class Graph:
+    def __init__(self):
+        self.graph = {}
+
+    def add_node(self, new_node, neighbours: Dict[int,int]):
+        self.graph[new_node] = neighbours
+        for node in neighbours: 
+            self.graph[node][new_node] = neighbours[node]
+    
+    def delete_node(self, node: int) -> bool:
+        if node in self.graph: 
+            neighbours = [x[0] for x in self.graph[node]]
+            del self.graph[node]
+            for neighbour in neighbours:
+                del self.graph[neighbour][node]
+            return True
+        else: 
+            return False
+    
+    def add_edge(self, node_1: int, node_2: int, distance: int) -> bool:
+        if not node_1 in self.graph or not node_2 in self.graphs:
+            return False
+        self.graph[node_1][node_2] = distance
+        self.graph[node_2][node_1] = distance
+        return True
+    
+    def delete_edge(self, node_1: int, node_2: int) -> bool:
+        if not node_1 in self.graph or not node_2 in self.graphs or not node_1 in self.graph[node_2]:
+            return False
+        del self.graphs[node_1][node_2]
+        del self.graphs[node_2][node_1]
+
+    # dunder functions for convenience
+
+    def __getitem__(self, item: int) -> Dict[int,int]:
+        return self.graph[item]
+    
+    def __iter__(self):
+        return self.graph.__iter__()
+```
 
 ### Stack
 
@@ -739,22 +783,24 @@ class BinarySearchTree:
 - **Description:** A greedy algorithm for finding the shortest paths from a single source node to all other nodes in a graph with non-negative edge weights.
 - **Time Complexity:** $O((V + E) \log V)$, where $V$ is the number of vertices and $E$ is the number of edges.
 - **Use-cases:** GPS navigation systems, network routing protocols, and finding the shortest path in a maze.
-- **Example:**
-  ```python
-  import heapq
-  def dijkstra(graph, start):
-      distances = {node: float('infinity') for node in graph}
-      distances[start] = 0
-      priority_queue = [(0, start)]
-      while priority_queue:
-          current_distance, current_node = heapq.heappop(priority_queue)
-          for neighbor, weight in graph[current_node].items():
-              distance = current_distance + weight
-              if distance < distances[neighbor]:
-                  distances[neighbor] = distance
-                  heapq.heappush(priority_queue, (distance, neighbor))
-      return distances
-  ```
+
+**Example implementation:**
+
+```python
+import heapq
+def dijkstra(graph, start):
+    distances = {node: float('infinity') for node in graph}
+    distances[start] = 0
+    priority_queue = [(0, start)]
+    while priority_queue:
+        current_distance, current_node = heapq.heappop(priority_queue)
+        for neighbor, weight in graph[current_node].items():
+            distance = current_distance + weight
+            if distance < distances[neighbor]:
+                distances[neighbor] = distance
+                heapq.heappush(priority_queue, (distance, neighbor))
+    return distances
+```
 
 #### Kruskal's Algorithm
 - **Description:** Finds a minimum spanning tree for a connected weighted graph by sorting all edges and adding them if they connect disjoint sets.
