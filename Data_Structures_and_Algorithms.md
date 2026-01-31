@@ -359,10 +359,10 @@ class _Node:
 
 
 class BinarySearchTree:
-    """A simple (un‑threaded) binary search tree for integers.
+    """A simple binary search tree for integers.
 
     The tree does **not** self‑balance; you can call :meth:`balance` to rebuild a
-    perfectly balanced tree from the current contents.
+    balanced tree from the current contents.
 
     Example
     -------
@@ -386,6 +386,8 @@ class BinarySearchTree:
 
         If *data* is supplied, each element is inserted using
         :meth:`insert_single`. ``data`` may be any iterable of ``int``.
+
+        Complexity: O(n) where n is the number of elements in ``data``.
         """
         self.root: Optional[_Node] = None
         if data is not None:
@@ -399,26 +401,36 @@ class BinarySearchTree:
         """Insert a single integer ``value`` into the tree.
 
         Duplicates are allowed and are placed on the right subtree.
+
+        Complexity: O(d) where d is the depth of the tree. 
+            Worst case: O(n) where n is the number of elements in the tree.
+            Average case (for balanced or near-balanced trees): O(log(n)).
         """
         if self.root is None:
             self.root = _Node(value)
             return
 
-        cur = self.root
+        current_node = self.root
         while True:
-            if value < cur.data:
-                if cur.left is None:
-                    cur.left = _Node(value)
+            if value < current_node.data:
+                if current_node.left is None:
+                    current_node.left = _Node(value)
                     return
-                cur = cur.left
-            else:  # ``value >= cur.data`` – duplicates go to the right side
-                if cur.right is None:
-                    cur.right = _Node(value)
+                current_node = current_node.left
+            else:
+                if current_node.right is None:
+                    current_node.right = _Node(value)
                     return
-                cur = cur.right
+                current_node = current_node.right
 
     def insert(self, values: Iterable[int]) -> None:
-        """Insert every integer from *values* into the tree."""
+        """Insert every integer from ``values`` into the tree.
+        
+        Complexity: If n denotes the original number of elements in the tree and m the number
+        of elements in ``values``, 
+            * The worst-case complexity is O(m × (n + m))
+            * The average-case complexity is O(m × log(n + m))
+        """
         for v in values:
             self.insert_single(v)
 
@@ -427,7 +439,10 @@ class BinarySearchTree:
     # ---------------------------------------------------------------------
 
     def depth(self) -> int:
-        """Return the maximum depth (height) of the tree.  Empty tree → 0."""
+        """Return the maximum depth (height) of the tree.  Empty tree → 0.
+
+        Complexity: O(n) where n is the number of elements in the tree.
+        """
 
         def _depth(node: Optional[_Node]) -> int:
             if node is None:
@@ -437,7 +452,10 @@ class BinarySearchTree:
         return _depth(self.root)
 
     def size(self) -> int:
-        """Return the number of nodes stored in the tree."""
+        """Return the number of nodes stored in the tree.
+
+        Complexity: O(n) where n is the number of elements in the tree.
+        """
 
         def _size(node: Optional[_Node]) -> int:
             if node is None:
@@ -447,12 +465,17 @@ class BinarySearchTree:
         return _size(self.root)
 
     def search(self, value: int) -> bool:
-        """Return ``True`` if *value* exists in the tree, ``False`` otherwise."""
-        cur = self.root
-        while cur is not None:
-            if value == cur.data:
+        """Return ``True`` if ``value`` exists in the tree, ``False`` otherwise.
+        
+        Complexity: O(d) where d is the depth of the tree. 
+            Worst case: O(n) where n is the number of elements in the tree.
+            Average case (for balanced or near-balanced trees): O(log(n)).
+        """
+        current_node = self.root
+        while current_node is not None:
+            if value == current_node.data:
                 return True
-            cur = cur.left if value < cur.data else cur.right
+            current_node = current_node.left if value < current_node.data else current_node.right
         return False
 
     # ---------------------------------------------------------------------
