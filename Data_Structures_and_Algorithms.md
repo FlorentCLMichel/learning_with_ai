@@ -639,17 +639,23 @@ class BinarySearchTree:
 
 **Example implementation:**
 ```python
-from typing import Dict
+from collections import deque
+from typing import Dict, List
 class Graph:
     def __init__(self):
         self.graph = {}
 
-    def add_node(self, new_node, neighbours: Dict[int,int]):
+    def add_node(self, new_node: int, neighbours: Dict[int,int]):
+        """If ``new_node`` is not in the graph, add it and return `True`; else return `False`"""
+        if new_node in self.graph:
+            return False
         self.graph[new_node] = neighbours
         for node in neighbours: 
             self.graph[node][new_node] = neighbours[node]
-    
+        return True
+
     def delete_node(self, node: int) -> bool:
+        """If ``node`` is in the graph, delete it and return `True`; else return `False`"""
         if node in self.graph: 
             neighbours = [x[0] for x in self.graph[node]]
             del self.graph[node]
@@ -659,18 +665,41 @@ class Graph:
         else: 
             return False
     
-    def add_edge(self, node_1: int, node_2: int, distance: int) -> bool:
+    def add_edge(self, node_1: int, node_2: int, weight: int) -> bool:
+        """If ``node_1 and ``node_2`` are in the graph, add a link between them and return `True`. 
+           (If the link already exists, it is replaced.) If not, return `False`."""
         if not node_1 in self.graph or not node_2 in self.graphs:
             return False
-        self.graph[node_1][node_2] = distance
-        self.graph[node_2][node_1] = distance
+        self.graph[node_1][node_2] = weight
+        self.graph[node_2][node_1] = weight
         return True
     
     def delete_edge(self, node_1: int, node_2: int) -> bool:
+        """If a link exists between ``node_1` and ``node_2``, delete it and return `True`; else 
+           return `False`."""
         if not node_1 in self.graph or not node_2 in self.graphs or not node_1 in self.graph[node_2]:
             return False
         del self.graphs[node_1][node_2]
         del self.graphs[node_2][node_1]
+        return True
+
+    def bfs(self, starting_nodes: List[int]) -> List[int]:
+        results_set = {}
+        results = []
+        queue = deque()
+        for node in starting_nodes:
+            if node in self.graph:
+                queue.append(node)
+                results_set[node] = True
+                results.append(node)
+        while queue:
+            node = queue.popleft()
+            for neighbour in self.graph[node]:
+                if not neighbour in results:
+                    results_set[neighbour] = True
+                    results.append(neighbour)
+                    queue.append(neighbour)
+        return results
 
     # dunder functions for convenience
 
