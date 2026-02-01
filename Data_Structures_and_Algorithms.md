@@ -640,94 +640,209 @@ class BinarySearchTree:
 **Example implementation:**
 ```python
 from collections import deque
-from typing import Dict, List
-class Graph:
-    def __init__(self):
-        self.graph = {}
+from typing import Dict, Iterable, List, Tuple
 
-    def add_node(self, new_node: int, neighbours: Dict[int,int]):
-        """If ``new_node`` is not in the graph, add it and return `True`; else return `False`"""
-        if new_node in self.graph:
+
+class Graph:
+    """Undirected weighted graph.
+
+    The graph is stored as an adjacency dictionary ``{node: {neighbour: weight, ...}}``.
+    Edge weights are assumed to be integers, but the type hints can be relaxed if needed.
+    """
+
+    def __init__(self) -> None:
+        # ``graph`` maps a node to a dict of its neighbours and the corresponding weight.
+        self._graph: Dict[int, Dict[int, int]] = {}
+
+    # ---------------------------------------------------------------------
+    # Basic mutating operations
+    # ---------------------------------------------------------------------
+    def add_node(self, new_node: int, neighbours: Dict[int, int] | None = None) -> bool:
+        """Add ``new_node`` to the graph.
+
+        Parameters
+        ----------
+        new_node:
+            Identifier of the node to add.
+        neighbours:
+            Optional mapping of existing neighbour nodes to edge weights.  Only neighbours
+            that already exist in the graph are linked; missing neighbours are ignored.
+
+        Returns
+        -------
+        bool
+            ``True`` if the node was added, ``False`` if it already existed.
+        """
+        if new_node in self._graph:
             return False
-        self.graph[new_node] = neighbours
-        for node in neighbours: 
-            self.graph[node][new_node] = neighbours[node]
+
+        # Initialise the adjacency dict for the new node.
+        self._graph[new_node] = {}
+        if neighbours:
+            for nb, w in neighbours.items():
+                if nb in self._graph:
+                    # Create the undirected edge.
+                    self._graph[new_node][nb] = w
+                    self._graph[nb][new_node] = w
         return True
 
     def delete_node(self, node: int) -> bool:
-        """If ``node`` is in the graph, delete it and return `True`; else return `False`"""
-        if node in self.graph: 
-            neighbours = [x[0] for x in self.graph[node]]
-            del self.graph[node]
-            for neighbour in neighbours:
-                del self.graph[neighbour][node]
-            return True
-        else: 
+        """Remove ``node`` and all incident edges.
+
+        Returns ``True`` if the node existed and was removed, otherwise ``False``.
+        """
+        if node not in self._graph:
             return False
-    
+
+        # Remove the node from each neighbour's adjacency dict.
+        for neighbour in self._graph[node].keys():
+            del self._graph[neighbour][node]
+        # Finally delete the node itself.
+        del self._graph[node]
+        return True
+
     def add_edge(self, node_1: int, node_2: int, weight: int) -> bool:
-        """If ``node_1 and ``node_2`` are in the graph, add a link between them and return `True`. 
-           (If the link already exists, it is replaced.) If not, return `False`."""
-        if not node_1 in self.graph or not node_2 in self.graphs:
+        """Add (or replace) an undirected edge between ``node_1`` and ``node_2``.
+
+        Returns ``True`` on success, ``False`` if either endpoint does not exist.
+        """
+        if node_1 not in self._graph or node_2 not in self._graph:
             return False
-        self.graph[node_1][node_2] = weight
-        self.graph[node_2][node_1] = weight
+        self._graph[node_1][node_2] = weight
+        self._graph[node_2][node_1] = weight
         return True
-    
+
     def delete_edge(self, node_1: int, node_2: int) -> bool:
-        """If a link exists between ``node_1` and ``node_2``, delete it and return `True`; else 
-           return `False`."""
-        if not node_1 in self.graph or not node_2 in self.graphs or not node_1 in self.graph[node_2]:
+        """Delete the edge between ``node_1`` and ``node_2``.
+
+        Returns ``True`` if the edge existed and was removed, otherwise ``False``.
+        """
+        if (
+            node_1 not in self._graph
+            or node_2 not in self._graph
+            or node_2 not in self._graph[node_1]
+        ):
             return False
-        del self.graphs[node_1][node_2]
-        del self.graphs[node_2][node_1]
+        del self._graph[node_1][node_2]
+        del self._graph[node_2][node_1]
         return True
 
-    def bfs(self, starting_nodes: List[int]) -> List[int]:
-        """Breadth-first search"""
-        results_set = {}
-        results = []
-        queue = deque()
-        for node in starting_nodes:
-            if node in self.graph:
-                queue.append(node)
-                results_set[node] = True
-                results.append(node)
-        while queue:
-            node = queue.popleft()
-            for neighbour in self.graph[node]:
-                if not neighbour in results_set:
-                    results_set[neighbour] = True
-                    results.append(neighbour)
-                    queue.append(neighbour)
-        return results
-    
-    def dfs(self, starting_nodes: List[int]) -> List[int]:
-        """Depth-first search"""
-        results_set = {}
-        results = []
-        queue = deque()
-        starting_nodes = starting_nodes.copy()
-        starting_nodes.reverse()
-        for node in starting_nodes:
-            if node in self.graph:
-                queue.append(node)
-        while queue:
-            node = queue.pop()
-            if not node in results_set:
-                results_set[node] = True
-                results.append(node)
-                for neighbour in self.graph[node]:
-                    queue.append(neighbour)
-        return results
+    # ---------------------------------------------------------------------
+    # Traversal utilities
+    # ---------------------------------------------------------------------
+    def bfs(self, start: int | Iterable[int]) -> List[int]:
+        """Breadth‑first traversal.
 
-    # dunder functions for convenience
+        Parameters
+        ----------
+        start:
+            A single start node or an iterable of start nodes.  Nodes that are not
+            present in the graph are ignored.
 
-    def __getitem__(self, item: int) -> Dict[int,int]:
-        return self.graph[item]
-    
+        Returns
+        -------
+        List[int]
+            Nodes in the order they are visited.
+        """
+        # Normalise ``start`` to a list of distinct, existing nodes.
+        if isinstance(start, int):
+            start_nodes = [start] if start in self._graph else []
+        else:
+            start_nodes = [n for n in start if n in self._graph]
+
+        visited: Dict[int, bool] = {}
+        order: List[int] = []
+        q: deque[int] = deque()
+
+        for node in start_nodes:
+            visited[node] = True
+            order.append(node)
+            q.append(node)
+
+        while q:
+            cur = q.popleft()
+            for nb in self._graph[cur]:
+                if nb not in visited:
+                    visited[nb] = True
+                    order.append(nb)
+                    q.append(nb)
+        return order
+
+    def dfs(self, start: int | Iterable[int]) -> List[int]:
+        """Depth‑first traversal (iterative implementation).
+
+        The semantics mirror :meth:`bfs` – a single node or an iterable of start nodes
+        can be supplied.
+        """
+        if isinstance(start, int):
+            start_nodes = [start] if start in self._graph else []
+        else:
+            start_nodes = [n for n in start if n in self._graph]
+
+        visited: Dict[int, bool] = {}
+        order: List[int] = []
+        stack: List[int] = []
+
+        # Push start nodes onto the stack in reverse order so that the first element
+        # of ``start_nodes`` is processed first (mirroring the original behaviour).
+        for node in reversed(start_nodes):
+            stack.append(node)
+
+        while stack:
+            cur = stack.pop()
+            if cur in visited:
+                continue
+            visited[cur] = True
+            order.append(cur)
+            # Extend the stack with neighbours – order is not guaranteed, but we keep
+            # the simple approach of iterating over the dict directly.
+            for nb in self._graph[cur]:
+                if nb not in visited:
+                    stack.append(nb)
+        return order
+
+    # ---------------------------------------------------------------------
+    # Convenience dunder methods
+    # ---------------------------------------------------------------------
+    def __getitem__(self, item: int) -> Dict[int, int]:
+        """Return the adjacency dict for ``item``.
+
+        Raises ``KeyError`` if the node does not exist.
+        """
+        return self._graph[item]
+
+    def __contains__(self, item: int) -> bool:
+        return item in self._graph
+
+    def __len__(self) -> int:
+        return len(self._graph)
+
     def __iter__(self):
-        return self.graph.__iter__()
+        return iter(self._graph)
+
+    def __repr__(self) -> str:
+        return f"Graph(nodes={list(self._graph.keys())})"
+
+    # ---------------------------------------------------------------------
+    # Helper view methods (not required but useful for debugging / testing)
+    # ---------------------------------------------------------------------
+    def nodes(self) -> List[int]:
+        """Return a list of all node identifiers."""
+        return list(self._graph.keys())
+
+    def edges(self) -> List[Tuple[int, int, int]]:
+        """Return a list of edges as ``(node1, node2, weight)`` tuples.
+
+        Each undirected edge appears only once (``node1 < node2``).
+        """
+        seen: set[Tuple[int, int]] = set()
+        result: List[Tuple[int, int, int]] = []
+        for u, nbrs in self._graph.items():
+            for v, w in nbrs.items():
+                if (v, u) not in seen:
+                    seen.add((u, v))
+                    result.append((u, v, w))
+        return result
 ```
 
 ### Stack
@@ -839,6 +954,8 @@ class Graph:
 import heapq
 def dijkstra(graph, start):
     distances = {node: float('infinity') for node in graph}
+    if start not in graph: 
+        return None
     distances[start] = 0
     priority_queue = [(0, start)]
     while priority_queue:
