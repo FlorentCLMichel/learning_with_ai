@@ -684,6 +684,7 @@ class Graph:
         return True
 
     def bfs(self, starting_nodes: List[int]) -> List[int]:
+        """Breadth-first search"""
         results_set = {}
         results = []
         queue = deque()
@@ -695,9 +696,28 @@ class Graph:
         while queue:
             node = queue.popleft()
             for neighbour in self.graph[node]:
-                if not neighbour in results:
+                if not neighbour in results_set:
                     results_set[neighbour] = True
                     results.append(neighbour)
+                    queue.append(neighbour)
+        return results
+    
+    def dfs(self, starting_nodes: List[int]) -> List[int]:
+        """Depth-first search"""
+        results_set = {}
+        results = []
+        queue = deque()
+        starting_nodes = starting_nodes.copy()
+        starting_nodes.reverse()
+        for node in starting_nodes:
+            if node in self.graph:
+                queue.append(node)
+        while queue:
+            node = queue.pop()
+            if not node in results_set:
+                results_set[node] = True
+                results.append(node)
+                for neighbour in self.graph[node]:
                     queue.append(neighbour)
         return results
 
