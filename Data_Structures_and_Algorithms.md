@@ -317,6 +317,56 @@ class Trie:
   - **Time Complexity:** With path compression and union by rank: $O(\alpha(n))$, where $\alpha$ is the inverse Ackermann function (effectively constant time).
 - **Use-cases:** Kruskal's algorithm for Minimum Spanning Tree (MST), network connectivity, and cycle detection in undirected graphs.
 
+**Example implementation:**
+
+```python
+from typing import Dict, Optional, Set
+
+class DSU:
+    '''A simple Disjoint Set Union class for integers
+    '''
+    def __init__(self):
+        self._map_element_to_subset: Dict[int, int] = {}
+        self._map_subset_to_elements: Dict[int, Set[int]] = {}
+
+    def add(self, element: int, subset: int):
+        '''Add an element to a subset. If `element` is already in the set, its subset is updated.
+        '''
+
+        # If the element is already in the set...
+        if element in self._map_element_to_subset:
+            original_subset = self._map_element_to_subset[element]
+
+            # If the new subset is different from the original one, remove the element from the original set
+            if original_subset != subset:
+                self._map_subset_to_elements[original_subset].remove(element)
+            
+            # If the subsets are identical, there is nothing to do
+            else return
+
+        # Add the new element to the correct subset
+        self._map_element_to_subset[element] = subset
+        self._map_subset_to_elements[subset].add(element)
+
+    def find(self, element) -> Optional[int] : 
+        '''If `element` is in the set, return the label of its subset. Otherwise, return `None`.
+        '''
+        return self._map_element_to_subset.get(element, None)
+
+    def merge(self, subset0, subset1):
+        '''Merge subset0 into subset1.
+        '''
+        # Update the subset of each element in `subset1`
+        for element in self._map_subset_to_elements.get(subset1, set()):
+            self._map_element_to_subset[element] = subset0
+
+        # Merge the subsets
+        self._map_subset_to_elements[subset0] = 
+            self._map_subset_to_elements.get(subset0, set()) 
+            + self._map_subset_to_elements.get(subset1, set())
+        
+```
+
 ### Bloom Filter
 
 - **Description:** A probabilistic data structure used to test whether an element is a member of a set. It may return false positives but never false negatives.
