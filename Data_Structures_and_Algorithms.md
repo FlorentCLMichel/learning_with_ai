@@ -342,11 +342,16 @@ class DSU:
                 self._map_subset_to_elements[original_subset].remove(element)
             
             # If the subsets are identical, there is nothing to do
-            else return
+            else: 
+                return
 
         # Add the new element to the correct subset
         self._map_element_to_subset[element] = subset
-        self._map_subset_to_elements[subset].add(element)
+        previous_elements = self._map_subset_to_elements.get(subset)
+        if previous_elements is None:
+            self._map_subset_to_elements[subset] = {element}
+        else:
+            self._map_subset_to_elements[subset].add(element)
 
     def find(self, element) -> Optional[int] : 
         '''If `element` is in the set, return the label of its subset. Otherwise, return `None`.
@@ -361,10 +366,10 @@ class DSU:
             self._map_element_to_subset[element] = subset0
 
         # Merge the subsets
-        self._map_subset_to_elements[subset0] = 
-            self._map_subset_to_elements.get(subset0, set()) 
-            + self._map_subset_to_elements.get(subset1, set())
-        
+        self._map_subset_to_elements[subset0] = \
+            self._map_subset_to_elements.get(subset0, set()) \
+            | self._map_subset_to_elements.get(subset1, set())
+        del self._map_subset_to_elements[subset1]
 ```
 
 ### Bloom Filter
