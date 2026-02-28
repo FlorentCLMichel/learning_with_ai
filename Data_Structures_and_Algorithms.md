@@ -323,60 +323,97 @@ class Trie:
 from typing import Dict, Optional, Set
 
 class DSU:
-    '''A simple Disjoint Set Union class for integers
+    '''Disjoint Set Union (Union-Find) data structure with path compression and union by rank.
+    
+    Internal Data Structures:
+    - _parent: Maps each element to its parent in the tree. If an element is its own parent,
+      it is the representative of its set.
+    - _rank: Maps each element to its rank (approximate tree depth). Used to keep trees balanced
+      during union operations.
+    - _size: Maps each element to the size of its set. Only valid for set representatives.
     '''
-    def __init__(self, subsets: Optional[Dict[int, Set[int]]] = None):
-        self._map_element_to_subset: Dict[int, int] = {}
-        if subsets is not None:
-            for label in subsets:
-                subset = subsets[label]
-                for element in subset:
-                    self._map_element_to_subset[element] = label
-            self._map_subset_to_elements = subsets
+    def __init__(self):
+        self._parent: Dict[int, int] = {}
+        self._rank: Dict[int, int] = {}
+        self._size: Dict[int, int] = {}
+
+    def make_set(self, element: int) -> None:
+        '''Create a new set containing only the given element.
+        '''
+        if element not in self._parent:
+            self._parent[element] = element
+            self._rank[element] = 0
+            self._size[element] = 1
+
+    def find(self, element: int) -> Optional[int]:
+        '''Find the representative of the set containing the element.
+        Returns None if element is not in any set.
+        '''
+        if element not in self._parent:
+            return None
+        
+        # Path compression
+        if self._parent[element] != element:
+            self._parent[element] = self.find(self._parent[element])
+        return self._parent[element]
+
+    def union(self, element0: int, element1: int) -> bool:
+        '''Merge the sets containing element0 and element1.
+        Returns True if merge was successful, False if elements were already in the same set.
+        '''
+        root0 = self.find(element0)
+        root1 = self.find(element1)
+        
+        if root0 is None or root1 is None:
+            return False
+        
+        if root0 == root1:
+            return False
+        
+        # Union by rank
+        if self._rank[root0] > self._rank[root1]:
+            self._parent[root1] = root0
+            self._size[root0] += self._size[root1]
+        elif self._rank[root0] < self._rank[root1]:
+            self._parent[root0] = root1
+            self._size[root1] += self._size[root0]
         else:
-            self._map_subset_to_elements: Dict[int, Set[int]] = {}
+            self._parent[root1] = root0
+            self._size[root0] += self._size[root1]
+            self._rank[root0] += 1
+        
+        return True
 
-    def add(self, element: int, subset: int):
-        '''Add an element to a subset. If `element` is already in the set, its subset is updated.
+    def connected(self, element0: int, element1: int) -> bool:
+        '''Check if two elements are in the same set.
         '''
+        return self.find(element0) == self.find(element1)
 
-        # If the element is already in the set...
-        if element in self._map_element_to_subset:
-            original_subset = self._map_element_to_subset[element]
-
-            # If the new subset is different from the original one, remove the element from the original set
-            if original_subset != subset:
-                self._map_subset_to_elements[original_subset].remove(element)
-            
-            # If the subsets are identical, there is nothing to do
-            else: 
-                return
-
-        # Add the new element to the correct subset
-        self._map_element_to_subset[element] = subset
-        previous_elements = self._map_subset_to_elements.get(subset)
-        if previous_elements is None:
-            self._map_subset_to_elements[subset] = {element}
-        else:
-            self._map_subset_to_elements[subset].add(element)
-
-    def find(self, element) -> Optional[int] : 
-        '''If `element` is in the set, return the label of its subset. Otherwise, return `None`.
+    def get_size(self, element: int) -> Optional[int]:
+        '''Get the size of the set containing the element.
         '''
-        return self._map_element_to_subset.get(element, None)
+        root = self.find(element)
+        if root is None:
+            return None
+        return self._size[root]
 
-    def merge(self, subset0, subset1):
-        '''Merge subset0 into subset1.
+    def get_all_elements(self) -> Set[int]:
+        '''Get all elements currently in the DSU.
         '''
-        # Update the subset of each element in `subset1`
-        for element in self._map_subset_to_elements.get(subset1, set()):
-            self._map_element_to_subset[element] = subset0
+        return set(self._parent.keys())
 
-        # Merge the subsets
-        self._map_subset_to_elements[subset0] = \
-            self._map_subset_to_elements.get(subset0, set()) \
-            | self._map_subset_to_elements.get(subset1, set())
-        del self._map_subset_to_elements[subset1]
+    def get_representatives(self) -> Set[int]:
+        '''Get all set representatives.
+        '''
+        return {element for element in self._parent if self._parent[element] == element}
+
+    def get_elements_in_set(self, element: int) -> Optional[Set[int]]:
+        '''Get all elements in the same set as the given element.
+        '''
+        root = self.find(element)
+        if root is None:
+            return None
+        return {e for e, p in self._parent.items() if self.find(e) == root}
 ```
 
 ### Bloom Filter
