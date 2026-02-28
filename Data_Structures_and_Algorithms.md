@@ -325,9 +325,16 @@ from typing import Dict, Optional, Set
 class DSU:
     '''A simple Disjoint Set Union class for integers
     '''
-    def __init__(self):
+    def __init__(self, subsets: Optional[Dict[int, Set[int]]] = None):
         self._map_element_to_subset: Dict[int, int] = {}
-        self._map_subset_to_elements: Dict[int, Set[int]] = {}
+        if subsets is not None:
+            for label in subsets:
+                subset = subsets[label]
+                for element in subset:
+                    self._map_element_to_subset[element] = label
+            self._map_subset_to_elements = subsets
+        else:
+            self._map_subset_to_elements: Dict[int, Set[int]] = {}
 
     def add(self, element: int, subset: int):
         '''Add an element to a subset. If `element` is already in the set, its subset is updated.
