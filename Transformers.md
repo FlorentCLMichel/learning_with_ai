@@ -52,7 +52,7 @@ $$
 
 - **Dot Product ($QK^T$):** Computes similarity scores between queries and keys.
 - **Scaling ($1/\sqrt{d_k}$):** Prevents the dot product from growing too large in high dimensions, which would push the softmax into regions with extremely small gradients.
-- **Softmax:** Normalizes scores into a probability distribution.
+- **Softmax:** Normalizes scores into a probability distribution. It is applied to each *row* of the matrix.
 
 ### Multi-Head Attention (MHA)
 
